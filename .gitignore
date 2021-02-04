@@ -3,3 +3,11 @@ Release/
 Debug/
 RenderEngine/Debug/
 RenderEngine/Release/
+build
+debug
+*.cflags
+*.config
+*.cxxflags
+*.files
+*.includes
+*.creator
