@@ -10,4 +10,4 @@ debug
 *.cxxflags
 *.files
 *.includes
-*.creator
+*.creator*

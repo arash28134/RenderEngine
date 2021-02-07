@@ -7,6 +7,18 @@
 [submodule "deps/assimp"]
 	path = deps/assimp
 	url = https://github.com/assimp/assimp
-[submodule "deps/EASTL"]
-	path = deps/EASTL
+[submodule "deps/EAlibs/EASTL"]
+	path = deps/EAlibs/EASTL
 	url = https://github.com/electronicarts/EASTL
+[submodule "deps/EAlibs/EABase"]
+	path = deps/EAlibs/EABase
+	url = https://github.com/electronicarts/EABase
+[submodule "deps/EAlibs/EAStdC"]
+	path = deps/EAlibs/EAStdC
+	url = https://github.com/electronicarts/EAStdC
+[submodule "deps/EAlibs/EAThread"]
+	path = deps/EAlibs/EAThread
+	url = https://github.com/electronicarts/EAThread
+[submodule "deps/EAlibs/EAAssert"]
+	path = deps/EAlibs/EAAssert
+	url = https://github.com/electronicarts/EAAssert

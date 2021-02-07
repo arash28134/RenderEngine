@@ -13,10 +13,10 @@ SET(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL
 add_subdirectory(assimp)
 
 # ================================================================================
-# EASTL
+# EA Libraries
 # ================================================================================
 
-add_subdirectory(EASTL)
+add_subdirectory(EAlibs)
 
 # ================================================================================
 # FREEIMAGE
