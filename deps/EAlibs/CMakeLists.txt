@@ -35,5 +35,5 @@ file(GLOB EASTL_SOURCES "EASTL/source/*.cpp")
 add_library(EASTL ${EASTL_SOURCES})
 target_compile_definitions(EASTL PUBLIC -DEASTL_OPENSOURCE=1)
 target_include_directories(EASTL PUBLIC EASTL/include)
-target_link_libraries(EASTL EABase)
+target_link_libraries(EASTL PUBLIC EABase)
 
