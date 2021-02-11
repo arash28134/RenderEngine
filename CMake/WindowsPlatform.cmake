@@ -1,4 +1,6 @@
-function get_windows_platform(OutPlatform)
+# FROM https://stackoverflow.com/questions/9742003/platform-detection-in-cmake
+
+function(get_windows_platform OutPlatform)
     if(WIN32)
         if(CMAKE_SYSTEM_VERSION)
             set(ver ${CMAKE_SYSTEM_VERSION})

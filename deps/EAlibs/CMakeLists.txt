@@ -8,7 +8,6 @@ target_include_directories(EABase INTERFACE EABase/include/Common)
 target_compile_definitions(EABase INTERFACE -D_CHAR16T)
 
 #EASTL
-
 file(GLOB EASTL_SOURCES "EASTL/source/*.cpp")
 add_library(EASTL ${EASTL_SOURCES})
 target_compile_definitions(EASTL PUBLIC -DEASTL_OPENSOURCE=1)
