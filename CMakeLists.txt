@@ -7,10 +7,11 @@ set(CMAKE_CXX_STANDARD 14)
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 find_package(OpenGL REQUIRED)
-if(UNIX)
-    find_package(FreeImage REQUIRED)
-else()
-
+if(WIN32)
+    include(WindowsPlatform)
+    get_windows_platform(PLATFORM_OUT)
+    set(FREEIMAGE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/deps/FreeImageDLL/${PLATFORM_OUT})
 endif()
+find_package(FreeImage REQUIRED)
 
 add_subdirectory(deps)
