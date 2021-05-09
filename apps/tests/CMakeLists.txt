@@ -1,0 +1,5 @@
+add_executable(transformtest transformtest.cpp)
+target_link_libraries(transformtest PRIVATE RenderComponents)
+
+add_executable(stringtest stringtest.cpp)
+target_link_libraries(stringtest PRIVATE RenderComponents)

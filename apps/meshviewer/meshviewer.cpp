@@ -1,0 +1,186 @@
+#include <iostream>
+
+#include <rendercomp/common/Types.h>
+
+#include <rendercomp/core/BoundingBox.h>
+#include <rendercomp/core/cameras/PerspectiveCamera.h>
+#include <rendercomp/core/math/Geometry.h>
+#include <rendercomp/core/Resources.h>
+#include <rendercomp/core/resources/Mesh.h>
+#include <rendercomp/core/resources/ShaderCode.h>
+
+#include <rendercomp/driver/UniformBuffer.h>
+#include <rendercomp/driver/Mesh.h>
+#include <rendercomp/driver/Program.h>
+#include <rendercomp/driver/Window.h>
+
+using namespace rendercomp;
+
+int main(int argc, char** args)
+{
+    if(argc < 2)
+    {
+        std::cout << "Usage: " << args[0] << " <path to mesh file>" << std::endl;
+        return 0;
+    }
+
+    const uint32_t WIDTH = 1536;
+    const uint32_t HEIGHT = 864;
+
+    // Load the mesh from disk
+    const String meshPath(args[1]);
+    std::unique_ptr<data::Mesh> meshFile = Resources::load<data::Mesh>(meshPath);
+    if(meshFile->vertexNormals.empty())
+        meshFile->vertexNormals = ComputeSmoothNormals(meshFile->faces, meshFile->vertexPositions);
+
+    // Create a bounding box of the mesh so we know where to place the camera easily
+    AxisAlignedBoundingBox aabb;
+    for(const auto& vPos : meshFile->vertexPositions)
+        aabb.expand(vPos);
+
+    std::cout << "Mesh bounds:\n\tMin: " << aabb.getMin() << "\n\tMax: " << aabb.getMax()
+              << std::endl;
+    std::cout << "Mesh stats:"
+              << "\n\tNum faces: " << meshFile->faces.size()
+              << "\n\tNum vertices: " << meshFile->vertexPositions.size()
+              << std::endl;
+
+    // Create a window, initializing the graphics context
+    WindowConfiguration config;
+    config.clearColor = Vec4f(.6f, .6f, .6f, 1.f);
+    config.title = String("Mesh viewer");
+    config.width = WIDTH;
+    config.height = HEIGHT;
+    config.resizable = false;
+    config.maxFPS = FPS::FPS_60;
+    Window window (config);
+
+    // Create a camera
+    const float nearPlane = 0.1f;
+    const float farPlane = 500.f;
+    const float aspectRatio = static_cast<float>(WIDTH) / static_cast<float>(HEIGHT);
+    const float fovy = 45.f;
+    PerspectiveCamera camera (nearPlane, farPlane, aspectRatio, fovy);
+
+    // Adjust the camera in a position where it can capture the whole mesh
+    const float radiansFovy = glm::radians(fovy * 0.5f);
+    const float distToModel = (aabb.getYLength() * 0.5f) / sin(radiansFovy) * cos(radiansFovy);
+    Vec3f camPos = aabb.center();
+    camPos.z = distToModel * 1.1f;
+    camera.setTranslation(camPos);
+    camera.updateView();
+
+    // Create a buffer to send the camera info to the GPU
+    // (2 mat4: view and proj-view)
+    const size_t uboBindingPoint {0};
+    UniformBuffer cameraBuffer (16 * 2 * sizeof(float), BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
+    cameraBuffer.bindToPoint(uboBindingPoint);
+
+    std::function<void(char*, const size_t)> updateCameraBufferCb =
+    [camPtr = &camera](char* ptr, const size_t)
+    {
+        const Mat4 projView = camPtr->getProjectionMatrix() * camPtr->getViewMatrix();
+        memcpy(ptr, &projView[0][0], 16 * sizeof(float));
+
+        const Vec3f camPos = camPtr->getPosition();
+        memcpy(ptr + 16 * sizeof(float), &camPos[0], 3 * sizeof(float));
+    };
+    cameraBuffer.writeData(updateCameraBufferCb);
+
+    // Set the mouse input processor callbacks
+    bool leftDown = false;
+    bool rightDown = false;
+    bool resetRot = true;
+    double lastRotMouseX = 0.0;
+    bool resetPan = true;
+    double lastPanMouseX = 0.0;
+    double lastPanMouseY = 0.0;
+    window.setMouseInputHandler([&](const MouseButton button,
+                                    const MouseButtonAction action,
+                                    const InputMod)
+    {
+        if(button == MouseButton::MOUSE_BUTTON_LEFT)
+        {
+            leftDown = action == MouseButtonAction::ACTION_PRESS;
+            resetRot = leftDown;
+        }
+        else if(button == MouseButton::MOUSE_BUTTON_RIGHT)
+        {
+            rightDown = action == MouseButtonAction::ACTION_PRESS;
+            resetPan = rightDown;
+        }
+    });
+    window.setCursorPositionHandler([&](const double x, const double y)
+    {
+        if(leftDown)
+        {
+            if(resetRot)
+            {
+                lastRotMouseX = x;
+                resetRot = false;
+                return;
+            }
+
+            const double deltaX = x - lastRotMouseX;
+            lastRotMouseX = x;
+
+            camera.rotateY(deltaX);
+            camera.updateView();
+            cameraBuffer.writeData(updateCameraBufferCb);
+        }
+        else if(rightDown)
+        {
+            if(resetPan)
+            {
+                lastPanMouseX = x;
+                lastPanMouseY = y;
+                resetPan = false;
+                return;
+            }
+
+            const double deltaX = x - lastPanMouseX;
+            const double deltaY = y - lastPanMouseY;
+            lastPanMouseX = x;
+            lastPanMouseY = y;
+
+            camera.translate({-deltaX * 0.01, deltaY * 0.01, 0.0});
+            camera.updateView();
+            cameraBuffer.writeData(updateCameraBufferCb);
+        }
+    });
+    float modFov = fovy;
+    window.setScrollInputHandler([&](const double yDelta)
+    {
+        modFov -= yDelta;
+        modFov = std::max(1.f, std::min(60.f, modFov));
+        camera.setFovy(modFov);
+        camera.updateProjection();
+        cameraBuffer.writeData(updateCameraBufferCb);
+    });
+
+    // Upload mesh to GPU and bind it
+    // (we will not bind any other mesh, so we do not need to change it during the loop)
+    Mesh engMesh (meshFile.get());
+    engMesh.bind();
+
+    // Create the program to shade the mesh, and bind it since it wont change
+    std::unique_ptr<data::ShaderCode> vertexShaderCode =
+            Resources::load<data::ShaderCode>("./pbr.vert");
+    std::unique_ptr<data::ShaderCode> fragmentShaderCode =
+            Resources::load<data::ShaderCode>("./pbr.frag");
+    Program pbrShader (vertexShaderCode->getRawCode(), fragmentShaderCode->getRawCode());
+    pbrShader.use();
+    pbrShader.setUniformBlockBinding("Camera", uboBindingPoint);
+
+    // Set the render loop body
+    window.setDrawCallback([&]()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDrawElements(GL_TRIANGLES, engMesh.getNumDrawElements(), GL_UNSIGNED_INT, 0);
+    });
+
+    // Render
+    window.renderLoop();
+
+    return 0;
+}
