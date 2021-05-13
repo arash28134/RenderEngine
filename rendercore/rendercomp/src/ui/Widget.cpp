@@ -15,33 +15,37 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "../common/Types.h"
+#include <rendercomp/ui/Widget.h>
 
 #include <imgui.h>
 
 namespace rendercomp
 {
-class Widget
+Widget::Widget(const String& title, const Vec2i pos, const Vec2i size)
+ : _title(title)
 {
-public:
-    Widget(const String& title,
-           const Vec2i pos = Vec2i(0, 0),
-           const Vec2i size = Vec2i(-1, -1));
+    setPosition(pos);
+    setSize(size);
+}
 
-    void setPosition(const Vec2i& pos);
-    void setSize(const Vec2i& size);
+void Widget::setPosition(const Vec2i &pos)
+{
+    _pos = ImVec2(pos.x, pos.y);
+}
 
-    virtual ~Widget() = default;
+void Widget::setSize(const Vec2i &size)
+{
+    _size = ImVec2(size.x, size.y);
+}
 
-    void draw() const noexcept;
+void Widget::draw() const noexcept
+{
+    ImGui::SetNextWindowPos(_pos);
+    ImGui::SetNextWindowSize(_size);
+    ImGui::Begin(_title.c_str());
 
-protected:
-    virtual void drawImpl() const noexcept = 0;
-private:
-    const String _title;
-    ImVec2 _pos;
-    ImVec2 _size;
-};
+    drawImpl();
+
+    ImGui::End();
+}
 }

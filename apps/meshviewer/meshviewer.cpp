@@ -3,6 +3,7 @@
 #include <rendercomp/common/Types.h>
 
 #include <rendercomp/core/BoundingBox.h>
+#include <rendercomp/core/cameras/OrthographicCamera.h>
 #include <rendercomp/core/cameras/PerspectiveCamera.h>
 #include <rendercomp/core/math/Geometry.h>
 #include <rendercomp/core/Resources.h>
@@ -15,7 +16,54 @@
 #include <rendercomp/driver/Program.h>
 #include <rendercomp/driver/Window.h>
 
+#include <rendercomp/ui/Widget.h>
+
 using namespace rendercomp;
+
+const uint32_t WIDTH = 1536;
+const uint32_t HEIGHT = 864;
+
+
+class ManipulatorWidget : public Widget
+{
+public:
+    ManipulatorWidget(UniformBuffer* materialGpuBuffer)
+        : Widget("Manipulator", {WIDTH - 400, 0}, {400, -1})
+        , _materialBuffer(materialGpuBuffer)
+    {
+        _updateMaterialCb = [&](char* ptr, const size_t)
+        {
+            size_t offset = 0;
+            memcpy(ptr, &_albedo[0], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(ptr + offset, &_roughness, sizeof(float));
+            offset += sizeof(float);
+            memcpy(ptr + offset, &_f0[0], sizeof(float) * 3);
+            offset += sizeof(float) * 3;
+            memcpy(ptr + offset, &_metallic, sizeof(float));
+        };
+        _materialBuffer->writeData(_updateMaterialCb);
+    }
+
+    void drawImpl() const noexcept final
+    {
+        bool matlUpdated = false;
+        matlUpdated = matlUpdated || ImGui::ColorEdit3("Albedo", &_albedo[0]);
+        matlUpdated = matlUpdated || ImGui::SliderFloat("Roughness", &_roughness, 0.01f, 1.0f);
+        matlUpdated = matlUpdated || ImGui::SliderFloat("Metallic", &_metallic, 0.01f, 1.f);
+        matlUpdated = matlUpdated || ImGui::SliderFloat3("Base reflectivity", &_f0[0], 0.0f, 1.f);
+        if(matlUpdated)
+            _materialBuffer->writeData(_updateMaterialCb);
+    }
+
+private:
+    mutable std::function<void(char*, const size_t)> _updateMaterialCb;
+    mutable UniformBuffer* _materialBuffer;
+    mutable Vec3f _albedo {1.f, 0.f, 0.f};
+    mutable float _roughness {0.01f};
+    mutable float _metallic {0.f};
+    mutable Vec3f _f0 {0.04f, 0.04f, 0.04f};
+};
 
 int main(int argc, char** args)
 {
@@ -24,9 +72,6 @@ int main(int argc, char** args)
         std::cout << "Usage: " << args[0] << " <path to mesh file>" << std::endl;
         return 0;
     }
-
-    const uint32_t WIDTH = 1536;
-    const uint32_t HEIGHT = 864;
 
     // Load the mesh from disk
     const String meshPath(args[1]);
@@ -76,7 +121,6 @@ int main(int argc, char** args)
     const size_t uboBindingPoint {0};
     UniformBuffer cameraBuffer (20 * sizeof(float), BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
     cameraBuffer.bindToPoint(uboBindingPoint);
-
     std::function<void(char*, const size_t)> updateCameraBufferCb =
     [camPtr = &camera](char* ptr, const size_t)
     {
@@ -87,6 +131,13 @@ int main(int argc, char** args)
         memcpy(ptr + 16 * sizeof(float), &camPos[0], 3 * sizeof(float));
     };
     cameraBuffer.writeData(updateCameraBufferCb);
+
+    // Create a buffer to send the material information
+    const size_t matUboBindingPoint {1};
+    UniformBuffer materialBuffer (sizeof(float) * 8, BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
+    materialBuffer.bindToPoint(matUboBindingPoint);
+    // Add a widget to handle it
+    window.createWidget<ManipulatorWidget>("test_widget", &materialBuffer);
 
     // Set the mouse input processor callbacks
     bool leftDown = false;
@@ -172,6 +223,7 @@ int main(int argc, char** args)
     Program pbrShader (vertexShaderCode->getRawCode(), fragmentShaderCode->getRawCode());
     pbrShader.use();
     pbrShader.setUniformBlockBinding("Camera", uboBindingPoint);
+    pbrShader.setUniformBlockBinding("Material", matUboBindingPoint);
 
     // Set the render loop body
     window.setDrawCallback([&]()

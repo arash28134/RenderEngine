@@ -7,8 +7,14 @@ out vec4 color;
 
 #define PI 3.1415926535
 
-// UE4 PBR based on https://learnopengl.com/PBR/Theory
+uniform Material
+{
+    vec4 albedoRoughness;
+    vec4 fresnelMetallic;
+} material;
 
+
+// UE4 PBR based on https://learnopengl.com/PBR/Theory
 // NORMAL DISTRIBUTION FUNCTION
 float NDFTrowbridgeReitz(vec3 normal, vec3 halfVector, float a)
 {
@@ -50,36 +56,30 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {
-
-    const vec3 albedo = vec3(1.0, 0.0, 0.0);
-    const float roughness = 0.05;
-    const vec3 fresnel0 = vec3(0.04, 0.04, 0.04);
-    const float metalness = 0.0;
-
     const vec3 L = normalize(vec3(1.0, 1.0, 1.0));
     vec3 H = normalize(V + L);
 
     const vec3 radiance = vec3(5.0);
 
     // Compute Geometry and Normal distribution terms
-    float NDF = NDFTrowbridgeReitz(N, H, roughness);
-    float G   = GFSmith(N, V, L, roughness);
-    vec3 F0 = mix(fresnel0, albedo, metalness);
-    vec3 F = FresnelSchlick(max(0.0, dot(H, V)), F0);
+    float NDF = NDFTrowbridgeReitz(N, H, material.albedoRoughness.a);
+    float G   = GFSmith(N, V, L, material.albedoRoughness.a);
+    vec3 F0 = mix(material.fresnelMetallic.rgb, material.albedoRoughness.rgb, material.fresnelMetallic.a);
+    vec3 F = FresnelSchlick(max(0.0, dot(H, V)), material.fresnelMetallic.rgb);
 
     // Condutors do not scatter aborved light back, hence the * (1.0 - pbrMat.fresnel0Metalness.a)
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
-    kD *= 1.0 - metalness;
+    kD *= 1.0 - material.fresnelMetallic.a;
 
     vec3 numerator    = NDF * G * F;
     float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
     vec3 specular = numerator / max(denominator, 0.001);
 
     float NdotL = max(0.0, dot(N, L));
-    vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+    vec3 Lo = (kD * material.albedoRoughness.rgb / PI + specular) * radiance * NdotL;
 
-    vec3 ambient = albedo * vec3(0.03);
+    vec3 ambient = material.albedoRoughness.rgb * vec3(0.03);
     vec3 HDRColor = ambient + Lo;
 
     // HDR Tone mapping

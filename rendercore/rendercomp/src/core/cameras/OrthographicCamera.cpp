@@ -45,7 +45,7 @@ void OrthographicCamera::_updateProjectionImpl()
     _projection[0].x = 2.f / width;
     _projection[1].y = 2.f / _height;
     _projection[2].z = -2.f / (_far - _near);
-    _projection[2].w = -(_near + _far) / (_far - _near);
+    _projection[3].z = -(_near + _far) / (_far - _near);
     _projection[3].w = 1.f;
 }
 }

@@ -17,6 +17,14 @@
 
 #include <rendercomp/driver/Window.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+#include <algorithm>
+
+#include <iostream>
+
 namespace rendercomp
 {
 
@@ -27,6 +35,9 @@ void key_callback(GLFWwindow* window, int key, int, int action, int mods)
     Window* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
     if(engineWindow->_keyboardCb)
     {
+        if(ImGui::GetIO().WantCaptureKeyboard)
+            return;
+
         Key engineKey = Key::KEY_NONE;
         switch(key)
         {
@@ -441,14 +452,22 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     Window* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
     if(engineWindow->_cursorPosCb)
+    {
+        if(ImGui::GetIO().WantCaptureMouse)
+            return;
         engineWindow->_cursorPosCb(xpos, ypos);
+    }
 }
 
 void cursor_enter_callback(GLFWwindow* window, int entered)
 {
     Window* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
     if(engineWindow->_cursorEnterCb)
+    {
+        if(ImGui::GetIO().WantCaptureMouse)
+            return;
         engineWindow->_cursorEnterCb(entered);
+    }
 }
 
 
@@ -457,6 +476,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     Window* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
     if(engineWindow->_mouseInputCb)
     {
+        if(ImGui::GetIO().WantCaptureMouse)
+            return;
+
         MouseButton engineButton = MouseButton::MOUSE_BUTTON_NONE;
         switch(button)
         {
@@ -514,7 +536,11 @@ void scroll_callback(GLFWwindow* window, double, double yoffset)
 {
     Window* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
     if(engineWindow->_scrollCb)
+    {
+        if(ImGui::GetIO().WantCaptureMouse)
+            return;
         engineWindow->_scrollCb(yoffset);
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -530,6 +556,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 Window::Window(const WindowConfiguration& config)
  : _window(nullptr)
 {
+    // INITIALIZE GLFW
     if (!glfwInit())
         throw std::runtime_error("OpenGLWIndow: Could not initialize GLFW");
 
@@ -565,12 +592,23 @@ Window::Window(const WindowConfiguration& config)
 
     glfwSwapInterval(static_cast<int>(config.maxFPS));
 
+    // INITIALIZE GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         glfwTerminate();
         throw std::runtime_error("OpenGLWindow: Could not initialize GLAD");
     }
 
+    // INITIALIZE IMGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(_window, true);
+    ImGui_ImplOpenGL3_Init("#version 460 core");
+
+    // OPENGL SPECIFIC CONFIGURATION
     glClearColor(config.clearColor.r, config.clearColor.g,
                  config.clearColor.b, config.clearColor.a);
 
@@ -590,6 +628,12 @@ void Window::removeWidget(const String& name)
         throw std::runtime_error("Unknown name given to remove widget: "
                                  + std::string(name.c_str()));
 
+    _widgetList.erase(std::remove_if(_widgetList.begin(), _widgetList.end(),
+    [ptr = it->second](std::unique_ptr<Widget>& widget)
+    {
+        return widget.get() == ptr;
+    }));
+
     _widgets.erase(it);
 }
 
@@ -597,11 +641,31 @@ void Window::renderLoop()
 {
     while(!glfwWindowShouldClose(_window))
     {
+        glfwPollEvents();
+
         _drawCb();
 
-        glfwPollEvents();
+        if(!_widgetList.empty())
+        {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            for(const auto& widget : _widgetList)
+                widget->draw();
+
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+
         glfwSwapBuffers(_window);
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(_window);
 }
 
 }

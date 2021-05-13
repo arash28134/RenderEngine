@@ -36,7 +36,8 @@ set(RENDERCOMP_CORE_SOURCES
     src/driver/Mesh.cpp
     src/driver/Program.cpp
     src/driver/UniformBuffer.cpp
-    src/driver/Window.cpp)
+    src/driver/Window.cpp
+    src/ui/Widget.cpp)
 
 add_library(RenderComponents STATIC ${RENDERCOMP_CORE_HEADERS} ${RENDERCOMP_CORE_SOURCES})
 
@@ -47,3 +48,4 @@ target_link_libraries(RenderComponents PRIVATE glfw)
 target_link_libraries(RenderComponents PUBLIC glm)
 target_link_libraries(RenderComponents PUBLIC EASTL)
 target_link_libraries(RenderComponents PUBLIC gladloader)
+target_link_libraries(RenderComponents PUBLIC imgui)

@@ -235,8 +235,8 @@ public:
                 std::make_unique<WidgetClass>(std::forward<Args>(args)...);
 
         WidgetClass* result = static_cast<WidgetClass*>(newWidget.get());
-
-        _widgets[name] = std::move(newWidget);
+        _widgetList.push_back(std::move(newWidget));
+        _widgets[name] = result;
 
         return result;
     }
@@ -252,7 +252,7 @@ public:
         if(it != _widgets.end())
             return nullptr;
 
-        return static_cast<WidgetClass*>(it->second.get());
+        return static_cast<WidgetClass*>(it->second);
     }
 
     /**
@@ -378,7 +378,8 @@ public:
 private:
     GLFWwindow* _window {nullptr};
     std::function<void()> _drawCb;
-    HashTable<String, std::unique_ptr<Widget>> _widgets;
+    Vector<std::unique_ptr<Widget>> _widgetList;
+    HashTable<String, Widget*> _widgets;
 
 };
 }
