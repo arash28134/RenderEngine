@@ -13,6 +13,7 @@ set(RENDERCOMP_CORE_HEADERS
     include/rendercomp/core/resources/Mesh.h
     include/rendercomp/core/resources/Volume.h
     include/rendercomp/core/resources/ShaderCode.h
+    include/rendercomp/driver/Graphics.h
     include/rendercomp/driver/Mesh.h
     include/rendercomp/driver/Program.h
     include/rendercomp/driver/UniformBuffer.h
@@ -31,6 +32,7 @@ set(RENDERCOMP_CORE_SOURCES
     src/core/cameras/PerspectiveCamera.cpp
     src/core/resources/Mesh.cpp
     src/core/resources/ShaderCode.cpp
+    src/driver/Graphics.cpp
     src/driver/Mesh.cpp
     src/driver/Program.cpp
     src/driver/UniformBuffer.cpp

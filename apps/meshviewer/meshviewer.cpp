@@ -9,6 +9,7 @@
 #include <rendercomp/core/resources/Mesh.h>
 #include <rendercomp/core/resources/ShaderCode.h>
 
+#include <rendercomp/driver/Graphics.h>
 #include <rendercomp/driver/UniformBuffer.h>
 #include <rendercomp/driver/Mesh.h>
 #include <rendercomp/driver/Program.h>
@@ -71,9 +72,9 @@ int main(int argc, char** args)
     camera.updateView();
 
     // Create a buffer to send the camera info to the GPU
-    // (2 mat4: view and proj-view)
+    // (1 mat4 proj view and 1 vec4 for the cam position)
     const size_t uboBindingPoint {0};
-    UniformBuffer cameraBuffer (16 * 2 * sizeof(float), BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
+    UniformBuffer cameraBuffer (20 * sizeof(float), BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
     cameraBuffer.bindToPoint(uboBindingPoint);
 
     std::function<void(char*, const size_t)> updateCameraBufferCb =
@@ -175,8 +176,8 @@ int main(int argc, char** args)
     // Set the render loop body
     window.setDrawCallback([&]()
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, engMesh.getNumDrawElements(), GL_UNSIGNED_INT, 0);
+        Graphics::clearBuffers(BufferFlag::COLOR | BufferFlag::DEPTH);
+        Graphics::drawElement(Primitive::TRIANGLES, engMesh.getNumDrawElements());
     });
 
     // Render
