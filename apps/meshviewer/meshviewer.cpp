@@ -48,12 +48,13 @@ public:
     void drawImpl() const noexcept final
     {
         bool matlUpdated = false;
-        matlUpdated = matlUpdated || ImGui::ColorEdit3("Albedo", &_albedo[0]);
-        matlUpdated = matlUpdated || ImGui::SliderFloat("Roughness", &_roughness, 0.01f, 1.0f);
-        matlUpdated = matlUpdated || ImGui::SliderFloat("Metallic", &_metallic, 0.01f, 1.f);
-        matlUpdated = matlUpdated || ImGui::SliderFloat3("Base reflectivity", &_f0[0], 0.0f, 1.f);
+        matlUpdated = ImGui::ColorEdit3("Albedo", &_albedo[0]);
+        matlUpdated = ImGui::SliderFloat("Roughness", &_roughness, 0.01f, 1.f) || matlUpdated;
+        matlUpdated = ImGui::SliderFloat("Metallic", &_metallic, 0.01f, 1.f) || matlUpdated;
+        matlUpdated = ImGui::SliderFloat3("Base reflectivity", &_f0[0], 0.f, 1.f) || matlUpdated;
         if(matlUpdated)
             _materialBuffer->writeData(_updateMaterialCb);
+
     }
 
 private:
@@ -83,13 +84,6 @@ int main(int argc, char** args)
     AxisAlignedBoundingBox aabb;
     for(const auto& vPos : meshFile->vertexPositions)
         aabb.expand(vPos);
-
-    std::cout << "Mesh bounds:\n\tMin: " << aabb.getMin() << "\n\tMax: " << aabb.getMax()
-              << std::endl;
-    std::cout << "Mesh stats:"
-              << "\n\tNum faces: " << meshFile->faces.size()
-              << "\n\tNum vertices: " << meshFile->vertexPositions.size()
-              << std::endl;
 
     // Create a window, initializing the graphics context
     WindowConfiguration config;
