@@ -27,6 +27,12 @@
 namespace rendercomp
 {
 
+/**
+ * @brief The BufferFlag enum
+ * The BufferFlag is a bitwise operation enabled enum which is used
+ * to specify to the Graphics class which buffers from the device to
+ * clean when issuing Graphics::clearBuffers() call
+ */
 enum class BufferFlag : uint32_t
 {
     COLOR = GL_COLOR_BUFFER_BIT,
@@ -42,6 +48,11 @@ BufferFlag operator^ (const BufferFlag left, const BufferFlag right);
 BufferFlag& operator^= (BufferFlag& left, const BufferFlag right);
 BufferFlag operator~ (const BufferFlag flag);
 
+/**
+ * @brief The Primitive enum
+ * The Primitive enum contains the available type of primitives to be rendere by the
+ * underlying graphics driver. They are used on the calls to Graphics::draw* functions.
+ */
 enum class Primitive : uint32_t
 {
     POINTS = GL_POINTS,
@@ -57,6 +68,11 @@ enum class Primitive : uint32_t
     PATCHES = GL_PATCHES
 };
 
+/**
+ * @brief The IndirectCommand struct
+ * The IndirectCommand struct is a small buffer with the configuraiton
+ * to issue indirect draw calls
+ */
 struct IndirectCommand
 {
     uint32_t count;
@@ -66,24 +82,79 @@ struct IndirectCommand
     uint32_t baseInstance;
 };
 
+/**
+ * @brief The Graphics class
+ * The Graphics class encapsulates the calls to configure, clear and draw commands
+ * of the underlying graphics driver. All the draw* methods expect an appropiate buffer
+ * to be binded for the command to be sucessful, as no client side geometry data might
+ * be passed on to them.
+ */
 class Graphics
 {
 public:
+    /**
+     * @brief clearBuffers Issues a clear buffer command for the underlying graphics driver.
+     * @param flagMask A bitwise combination of the BufferFlag enum keys.
+     */
     static void clearBuffers(const BufferFlag flagMask) noexcept;
 
+    /**
+     * @brief drawArray Draws a list of vertices from a previsouly binded buffer.
+     * @param prim Type of primitive to render with the given vertices
+     * @param offset Offset within the binded buffer at which to start fetching vertices for
+     *        rendering
+     * @param count number of vertices to render (Careful not to overflow the read, as the
+     *        count starts at the offset parameter)
+     */
     static void drawArray(const Primitive prim, const size_t offset, const size_t count) noexcept;
 
+    /**
+     * @brief drawArrayInstanced Draws a specified number of instances of the vertices which are
+     *        provided by a previosuly binded buffer
+     * @param prim Type of primitive to render with the given vertices
+     * @param offset Offset within the binded buffer at which to start fetching vertices for
+     *        rendering
+     * @param count number of vertices to render (Careful not to overflow the read, as the
+     *        count starts at the offset parameter)
+     * @param numElements number of instances to render of the given vertices.
+     */
     static void drawArrayInstanced(const Primitive prim, const size_t offset,
                                    const size_t count, const size_t numElements) noexcept;
 
+    /**
+     * @brief drawElement Draws an indexed set of vertices from a previously binded mesh
+     * @param prim Type of primitive to render with the vertex data
+     * @param indexCount Number of indices that will be renderer.
+     */
     static void drawElement(const Primitive prim, const size_t indexCount) noexcept;
 
+    /**
+     * @brief drawElement Draws a specified number of instances of an indexed set
+     *        of vertices from a previously binded mesh
+     * @param prim Type of primitive to render with the vertex data
+     * @param indexCount Number of indices that will be renderer.
+     * @param numElements number of instances to ender of the given vertices
+     */
     static void drawElementInstanced(const Primitive prim,
                                      const size_t indexCount,
                                      const size_t numElements) noexcept;
 
+    /**
+     * @brief drawElementIndirect Draws a specified number of instances of an indexed
+     *        set of vertices from a previously binded mesh, using an indirect buffer to
+     *        configure the draw call
+     * @param prim Type of primitive to render with the given vertices
+     * @param command The configuration for the draw call
+     */
     static void drawElementIndirect(const Primitive prim, const IndirectCommand& command) noexcept;
 
+    /**
+     * @brief drawElementIndirect Draws a specified number of instances of an indexed
+     *        set of vertices from a previously binded mesh, using multiple indirect buffers to
+     *        configure the draw call
+     * @param prim Type of primitive to render with the given vertices
+     * @param commands A list of configurations for the draw call
+     */
     static void drawMultiElementsIndirect(const Primitive prim,
                                           const Vector<IndirectCommand>& commands) noexcept;
 
