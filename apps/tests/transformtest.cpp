@@ -30,10 +30,10 @@ int main(int, char**)
     std::cout << (transform.toMatrix() * pos) << std::endl;
 
     std::cout << "Translate to x = 100, then rotate 90 around Y\n" <<
-        (glm::toMat4(Quaterion(Vec3f(0.f, glm::radians(90.f), 0.f))) * glm::translate(Vec3f(100.f, 0.f, 0.f)) * pos) << std::endl;
+        (glm::toMat4(Quaternion(Vec3f(0.f, glm::radians(90.f), 0.f))) * glm::translate(Vec3f(100.f, 0.f, 0.f)) * pos) << std::endl;
 
     std::cout << "Rotate 90 around Y, then translate to x = 100\n" <<
-        (glm::translate(Vec3f(100.f, 0.f, 0.f)) * glm::toMat4(Quaterion(Vec3f(0.f, glm::radians(90.f), 0.f))) * pos) << std::endl;
+        (glm::translate(Vec3f(100.f, 0.f, 0.f)) * glm::toMat4(Quaternion(Vec3f(0.f, glm::radians(90.f), 0.f))) * pos) << std::endl;
 
     Vec3f maxX (100.f, 0.f, 0.f);
     Vec3f maxY (0.f, 100.f, 0.f);

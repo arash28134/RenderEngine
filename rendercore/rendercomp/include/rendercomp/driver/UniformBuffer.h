@@ -19,6 +19,8 @@
 
 #include "../common/Types.h"
 
+#include "DriverDebug.h"
+
 #include <glad/glad.h>
 
 #include <functional>
@@ -57,7 +59,7 @@ public:
      */
     UniformBuffer(const size_t byteSize,
                   const BufferDataPolicy data,
-                  const BufferUsagePolicy usage);
+                  const BufferUsagePolicy usage) RC_NOEXCEPT;
 
     ~UniformBuffer();
 
@@ -66,7 +68,7 @@ public:
      * @param byteData A byte buffer containing raw data.
      * @throws std::runtime_error if the given buffer exceeds this buffer size
      */
-    void setData(const Vector<char>& byteData);
+    void setData(const Vector<char>& byteData) const RC_NOEXCEPT;
 
     /**
      * @brief Allows to specify a callback, where a pointer to the gpu memory of this
@@ -74,7 +76,8 @@ public:
      * @param cb Callback with the form void(char* ptr, const size_t size) that will
      *        write data to the provided ptr.
      */
-    void writeData(std::function<void(char* ptr, const size_t bufferSize)>& cb) noexcept;
+    void writeData(const std::function<void(char* ptr,
+                                            const size_t bufferSize)>& cb) const RC_NOEXCEPT;
 
     /**
      * @brief Allows to specify a callback, where a pointer to the gpu memory of this
@@ -82,7 +85,8 @@ public:
      * @param cb Callback with the form void(char* ptr, const size_t size) that will
      *        read data from the provided ptr.
      */
-    void readData(std::function<void(const char* ptr, const size_t bufferSize)>& cb) noexcept;
+    void readData(const std::function<void(const char* ptr,
+                                           const size_t bufferSize)>& cb) const RC_NOEXCEPT;
 
     /**
      * @brief Allows to specify a callback, where a pointer to the gpu memory of this
@@ -90,13 +94,14 @@ public:
      * @param cb Callback with the form void(char* ptr, const size_t size) that will
      *        write and/or read data to the provided ptr.
      */
-    void readWriteData(std::function<void(char* ptr, const size_t bufferSize)>& cb) noexcept;
+    void readWriteData(const std::function<void(char* ptr,
+                                                const size_t bufferSize)>& cb) const RC_NOEXCEPT;
 
     /**
      * @brief bindToPoint Binds the buffer to the given binding point to be used by a shader
      * @param bindingPoint The binding point at which to bind this buffer.
      */
-    void bindToPoint(const size_t bindingPoint) const noexcept;
+    void bindToPoint(const size_t bindingPoint) const RC_NOEXCEPT;
 
     /**
      * @brief bindRangeToPoint Binds a part of this buffer's data (specified by the offset and
@@ -109,7 +114,7 @@ public:
      */
     void bindRangeToPoint(const size_t bindingPoint,
                           const size_t offset,
-                          const size_t length) const;
+                          const size_t length) const RC_NOEXCEPT;
 
     size_t getSize() const noexcept
     {
@@ -122,7 +127,7 @@ private:
      *        size in bytes for an uniform buffer
      * @return size_t The maximum uniform buffer size in bytes.
      */
-    size_t _getMaxSize() const noexcept;
+    size_t _getMaxSize() const RC_NOEXCEPT;
 
 private:
     const size_t _size;

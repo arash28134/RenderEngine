@@ -1,0 +1,1 @@
+Images (back.jpg, bottom.jpg, front.jgp, left.jpg, right.jpg and top.jpg) obtained from https://learnopengl.com/Advanced-OpenGL/Cubemaps

@@ -21,7 +21,8 @@
 
 namespace rendercomp
 {
-inline GLenum EngineToOpenGLBufferUsage(const BufferDataPolicy data, const BufferUsagePolicy usage)
+inline GLenum EngineToOpenGLBufferUsage(const BufferDataPolicy data,
+                                        const BufferUsagePolicy usage) RC_NOEXCEPT
 {
     switch(data)
     {
@@ -69,104 +70,130 @@ inline GLenum EngineToOpenGLBufferUsage(const BufferDataPolicy data, const Buffe
         break;
     }
 
+#ifdef RENDERCOMP_DEBUG
     throw std::runtime_error("Invalid Buffer data and/or usage policy");
+#else
+    return GL_INVALID_ENUM;
+#endif
 }
 
 UniformBuffer::UniformBuffer(const size_t size,
                              const BufferDataPolicy data,
-                             const BufferUsagePolicy usage)
+                             const BufferUsagePolicy usage) RC_NOEXCEPT
 : _size(size)
 , _handle(GL_INVALID_VALUE)
 , _mapped(false)
 {
+#ifdef RENDERCOMP_DEBUG
    const size_t maxSize = _getMaxSize();
    if(_size > maxSize)
        throw std::runtime_error("Max allowed uniform buffer size is "
                                 + std::to_string(maxSize));
+#endif
 
-   glCreateBuffers(1, &_handle);
-   glNamedBufferData(_handle, size, nullptr, EngineToOpenGLBufferUsage(data, usage));
+   DRIVER_CALL(glCreateBuffers(1, &_handle));
+   DRIVER_CALL(glNamedBufferData(_handle, size, nullptr, EngineToOpenGLBufferUsage(data, usage)));
 }
 
 UniformBuffer::~UniformBuffer()
 {
     if(_handle != GL_INVALID_VALUE)
-        glDeleteBuffers(1, &_handle);
+        DRIVER_CALL_NOTHROW(glDeleteBuffers(1, &_handle));
 }
 
-void UniformBuffer::setData(const Vector<char> &byteData)
+void UniformBuffer::setData(const Vector<char> &byteData) const RC_NOEXCEPT
 {
+#ifdef RENDERCOMP_DEBUG
     if(byteData.size() > _size)
         throw std::runtime_error("Attempted to overflow uniform buffer "
                                  "with bigger data than buffer size");
+#endif
 
-    glNamedBufferSubData(_handle, 0, byteData.size(), (const void*)byteData.data());
+    DRIVER_CALL(glNamedBufferSubData(_handle, 0, byteData.size(), (const void*)byteData.data()));
 }
 
-void UniformBuffer::writeData(std::function<void(char* ptr, const size_t bufferSize)>& cb) noexcept
+void UniformBuffer::writeData(const std::function<void(char* ptr, const
+                                                       size_t bufferSize)>& cb) const RC_NOEXCEPT
 {
-    char* ptr = static_cast<char*>(glMapNamedBuffer(_handle, GL_WRITE_ONLY));
+    void* res = DRIVER_CALL(glMapNamedBuffer(_handle, GL_WRITE_ONLY));
+    char* ptr = static_cast<char*>(res);
+#ifdef RENDERCOMP_DEBUG
     try
     {
+#endif
         cb(ptr, _size);
+#ifdef RENDERCOMP_DEBUG
     }
     catch (const std::exception& e)
     {
         std::cerr << "Exception on UniformBuffer::writeData(): " << e.what() << std::endl;
     }
+#endif
 
-    glUnmapNamedBuffer(_handle);
+    DRIVER_CALL(glUnmapNamedBuffer(_handle));
 }
 
-void UniformBuffer::readData(std::function<void (const char *, const size_t)> &cb) noexcept
+void UniformBuffer::readData(const std::function<void (const char *,
+                                                       const size_t)> &cb) const RC_NOEXCEPT
 {
-    char* ptr = static_cast<char*>(glMapNamedBuffer(_handle, GL_READ_ONLY));
+    void* res = DRIVER_CALL(glMapNamedBuffer(_handle, GL_READ_ONLY));
+    char* ptr = static_cast<char*>(res);
+#ifdef RENDERCOMP_DEBUG
     try
     {
+#endif
         cb(ptr, _size);
+#ifdef RENDERCOMP_DEBUG
     }
     catch (const std::exception& e)
     {
         std::cerr << "Exception on UniformBuffer::readData(): " << e.what() << std::endl;
     }
-
-    glUnmapNamedBuffer(_handle);
+#endif
+    DRIVER_CALL(glUnmapNamedBuffer(_handle));
 }
 
-void UniformBuffer::readWriteData(std::function<void (char *, const size_t)> &cb) noexcept
+void UniformBuffer::readWriteData(const std::function<void (char *,
+                                                            const size_t)> &cb) const RC_NOEXCEPT
 {
-    char* ptr = static_cast<char*>(glMapNamedBuffer(_handle, GL_READ_WRITE));
+    void* res = DRIVER_CALL(glMapNamedBuffer(_handle, GL_READ_WRITE));
+    char* ptr = static_cast<char*>(res);
+#ifdef RENDERCOMP_DEBUG
     try
     {
+#endif
         cb(ptr, _size);
+#ifdef RENDERCOMP_DEBUG
     }
     catch (const std::exception& e)
     {
         std::cerr << "Exception on UniformBuffer::readWrite(): " << e.what() << std::endl;
     }
-
-    glUnmapNamedBuffer(_handle);
+#endif
+    DRIVER_CALL(glUnmapNamedBuffer(_handle));
 }
 
 void UniformBuffer::bindRangeToPoint(const size_t bindingPoint,
                                      const size_t offset,
-                                     const size_t length) const
+                                     const size_t length) const RC_NOEXCEPT
 {
+#ifdef RENDERCOMP_DEBUG
     if(offset + length > _size)
         throw std::runtime_error("Tried to bind uniform buffer range beyond buffer size");
+#endif
 
-    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, _handle, offset, length);
+    DRIVER_CALL(glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, _handle, offset, length));
 }
 
-void UniformBuffer::bindToPoint(const size_t bindingPoint) const noexcept
+void UniformBuffer::bindToPoint(const size_t bindingPoint) const RC_NOEXCEPT
 {
-    glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, _handle);
+    DRIVER_CALL(glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, _handle));
 }
 
-size_t UniformBuffer::_getMaxSize() const noexcept
+size_t UniformBuffer::_getMaxSize() const RC_NOEXCEPT
 {
     GLint maxSize;
-    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxSize);
+    DRIVER_CALL(glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxSize));
     return static_cast<size_t>(maxSize);
 }
 }

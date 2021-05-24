@@ -21,7 +21,7 @@ namespace rendercomp
 {
 Transform::Transform()
  : _tranlsation(0.f, 0.f, 0.f)
- , _rotation(Quaterion())
+ , _rotation(Quaternion())
  , _scale(1.f, 1.f, 1.f)
 {
     _updateBasis();
@@ -39,19 +39,19 @@ void Transform::setTranslation(const Vec3f& translation)
 
 void Transform::rotateX(const float degree)
 {
-    _rotation *= Quaterion(Vec3f(glm::radians(degree), 0.f, 0.f));
+    _rotation *= Quaternion(Vec3f(glm::radians(degree), 0.f, 0.f));
     _updateBasis();
 }
 
 void Transform::rotateY(const float degree)
 {
-    _rotation *= Quaterion(Vec3f(0.f, glm::radians(degree), 0.f));
+    _rotation *= Quaternion(Vec3f(0.f, glm::radians(degree), 0.f));
     _updateBasis();
 }
 
 void Transform::rotateZ(const float degree)
 {
-    _rotation *= Quaterion(Vec3f(0.f, 0.f, glm::radians(degree)));
+    _rotation *= Quaternion(Vec3f(0.f, 0.f, glm::radians(degree)));
     _updateBasis();
 }
 
@@ -63,7 +63,7 @@ void Transform::rotate(const Vec3f& angleAxis)
     _updateBasis();
 }
 
-void Transform::rotate(const Quaterion& quat)
+void Transform::rotate(const Quaternion& quat)
 {
     _rotation *= quat;
     _updateBasis();
@@ -77,7 +77,7 @@ void Transform::setRotation(const Vec3f& angleAxis)
     _updateBasis();
 }
 
-void Transform::setRotation(const Quaterion& quat)
+void Transform::setRotation(const Quaternion& quat)
 {
     _rotation = quat;
     _updateBasis();

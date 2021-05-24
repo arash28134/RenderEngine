@@ -553,12 +553,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 }
-Window::Window(const WindowConfiguration& config)
+Window::Window(const WindowConfiguration& config) RC_NOEXCEPT
  : _window(nullptr)
 {
     // INITIALIZE GLFW
-    if (!glfwInit())
+    const int res = glfwInit();
+    (void)res;
+#ifdef RENDERCOMP_DEBUG
+    if (!res)
         throw std::runtime_error("OpenGLWIndow: Could not initialize GLFW");
+#endif
 
     glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -574,7 +578,9 @@ Window::Window(const WindowConfiguration& config)
     if (!_window)
     {
         glfwTerminate();
+#ifdef RENDERCOMP_DEBUG
         throw std::runtime_error("OpenGLWindow: Could not create GLFW window");
+#endif
     }
 
     glfwSetWindowUserPointer(_window, this);
@@ -596,7 +602,9 @@ Window::Window(const WindowConfiguration& config)
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         glfwTerminate();
+#ifdef RENDERCOMP_DEBUG
         throw std::runtime_error("OpenGLWindow: Could not initialize GLAD");
+#endif
     }
 
     // INITIALIZE IMGUI
@@ -609,11 +617,12 @@ Window::Window(const WindowConfiguration& config)
     ImGui_ImplOpenGL3_Init("#version 460 core");
 
     // OPENGL SPECIFIC CONFIGURATION
-    glClearColor(config.clearColor.r, config.clearColor.g,
-                 config.clearColor.b, config.clearColor.a);
+    DRIVER_CALL(glClearColor(config.clearColor.r,
+                             config.clearColor.g,
+                             config.clearColor.b,
+                             config.clearColor.a));
 
-    glViewport(0, 0, config.width, config.height);
-    glEnable(GL_DEPTH_TEST);
+    DRIVER_CALL(glViewport(0, 0, config.width, config.height));
 }
 
 Window::~Window()
@@ -637,7 +646,7 @@ void Window::removeWidget(const String& name)
     _widgets.erase(it);
 }
 
-void Window::renderLoop()
+void Window::renderLoop() RC_NOEXCEPT
 {
     while(!glfwWindowShouldClose(_window))
     {

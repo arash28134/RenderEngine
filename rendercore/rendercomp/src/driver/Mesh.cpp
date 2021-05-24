@@ -19,12 +19,23 @@
 
 namespace rendercomp
 {
-Mesh::Mesh(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel)
+Mesh::Mesh() RC_NOEXCEPT
  : _vao(GL_INVALID_VALUE)
  , _ibo(GL_INVALID_VALUE)
  , _vbo(GL_INVALID_VALUE)
  , _numDrawVertex(0u)
 {
+    // Generate vao and bind it
+    DRIVER_CALL(glCreateVertexArrays(1, &_vao));
+}
+
+Mesh::Mesh(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel) RC_NOEXCEPT
+ : _vao(GL_INVALID_VALUE)
+ , _ibo(GL_INVALID_VALUE)
+ , _vbo(GL_INVALID_VALUE)
+ , _numDrawVertex(0u)
+{
+#ifdef RENDERCOMP_DEBUG
     if(!mesh)
         throw std::runtime_error("Mesh: The given source Mesh object is null");
 
@@ -39,17 +50,18 @@ Mesh::Mesh(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel)
                                  + std::to_string(uvChannel) + ", but only "
                                  + std::to_string(mesh->vertexUVs.size()) + "channels are "
                                  "available");
+#endif
 
     // Generate vao and bind it
-    glCreateVertexArrays(1, &_vao);
+    DRIVER_CALL(glCreateVertexArrays(1, &_vao));
 
     // Generate face buffer
-    glCreateBuffers(1, &_ibo);
+    DRIVER_CALL(glCreateBuffers(1, &_ibo));
     // Fill face buffer
     _setFaces(mesh);
 
     // Generate vertex attribute buffer
-    glCreateBuffers(1, &_vbo);
+    DRIVER_CALL(glCreateBuffers(1, &_vbo));
     // Fill vertex attribute buffer
     _setVertexData(mesh, uvChannel, colorChannel);
 }
@@ -58,20 +70,23 @@ Mesh::~Mesh()
 {
     // Release buffers, if valid
     if(_ibo != GL_INVALID_VALUE)
-        glDeleteBuffers(1, &_ibo);
+        DRIVER_CALL_NOTHROW(glDeleteBuffers(1, &_ibo));
     if(_vbo != GL_INVALID_VALUE)
-        glDeleteBuffers(1, &_vbo);
+        DRIVER_CALL_NOTHROW(glDeleteBuffers(1, &_vbo));
     if(_vao != GL_INVALID_VALUE)
-        glDeleteVertexArrays(1, &_vbo);
+        DRIVER_CALL_NOTHROW(glDeleteVertexArrays(1, &_vbo));
 }
 
-void Mesh::bind() const
+void Mesh::bind() const RC_NOEXCEPT
 {
-    glBindVertexArray(_vao);
+    DRIVER_CALL(glBindVertexArray(_vao));
 }
 
-void Mesh::_setFaces(data::Mesh* mesh)
+void Mesh::_setFaces(data::Mesh* mesh) RC_NOEXCEPT
 {
+    if(mesh->faces.empty())
+        return;
+
     // Fill the buffer with data from the Mesh object
     _numDrawVertex = mesh->faces.size() * 3;
     Vector<GLuint> faceBuffer (_numDrawVertex);
@@ -84,15 +99,15 @@ void Mesh::_setFaces(data::Mesh* mesh)
     }
 
     // Allocate the space
-    glNamedBufferStorage(_ibo,
-                         faceBuffer.size() * sizeof(GLuint),
-                         faceBuffer.data(),
-                         0);
-    glVertexArrayElementBuffer(_vao, _ibo);
+    DRIVER_CALL(glNamedBufferStorage(_ibo,
+                                     faceBuffer.size() * sizeof(GLuint),
+                                     faceBuffer.data(),
+                                     0));
+    DRIVER_CALL(glVertexArrayElementBuffer(_vao, _ibo));
 
 }
 
-void Mesh::_setVertexData(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel)
+void Mesh::_setVertexData(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel) RC_NOEXCEPT
 {
     // Compute total number of elements (floats) there will be in the buffer
     size_t bufferElements {0};
@@ -157,53 +172,56 @@ void Mesh::_setVertexData(data::Mesh* mesh, int32_t uvChannel, int32_t colorChan
         }
     }
 
-    glNamedBufferStorage(_vbo,
-                         vertexBuffer.size() * sizeof(float),
-                         (const void*)vertexBuffer.data(),
-                         0);
+    DRIVER_CALL(glNamedBufferStorage(_vbo,
+                                     vertexBuffer.size() * sizeof(float),
+                                     (const void*)vertexBuffer.data(),
+                                     0));
 
     // Enable vertex attribute pointers for usage in shaders
     const size_t stride = bufferElements * sizeof(float);
     size_t offset = 0;
 
     // vertex positions
-    glEnableVertexArrayAttrib(_vao, 0);
-    glVertexArrayAttribFormat(_vao, 0, 3, GL_FLOAT, GL_FALSE, offset);
-    glVertexArrayAttribBinding(_vao, 0, 0);
+    DRIVER_CALL(glEnableVertexArrayAttrib(_vao, 0));
+    DRIVER_CALL(glVertexArrayAttribFormat(_vao, 0, 3, GL_FLOAT, GL_FALSE, offset));
+    DRIVER_CALL(glVertexArrayAttribBinding(_vao, 0, 0));
     offset += sizeof(float) * 3;
 
     // normal vectors
-    glEnableVertexArrayAttrib(_vao, 1);
-    glVertexArrayAttribFormat(_vao, 1, 3, GL_FLOAT, GL_FALSE, offset);
-    glVertexArrayAttribBinding(_vao, 1, 0);
-    offset += sizeof(float) * 3;
+    if(!mesh->vertexNormals.empty())
+    {
+        DRIVER_CALL(glEnableVertexArrayAttrib(_vao, 1));
+        DRIVER_CALL(glVertexArrayAttribFormat(_vao, 1, 3, GL_FLOAT, GL_FALSE, offset));
+        DRIVER_CALL(glVertexArrayAttribBinding(_vao, 1, 0));
+        offset += sizeof(float) * 3;
+    }
 
     // Tangents (if any)
     if(!mesh->vertexTangents.empty())
     {
-        glEnableVertexArrayAttrib(_vao, 2);
-        glVertexArrayAttribFormat(_vao, 2, 3, GL_FLOAT, GL_FALSE, offset);
-        glVertexArrayAttribBinding(_vao, 2, 0);
+        DRIVER_CALL(glEnableVertexArrayAttrib(_vao, 2));
+        DRIVER_CALL(glVertexArrayAttribFormat(_vao, 2, 3, GL_FLOAT, GL_FALSE, offset));
+        DRIVER_CALL(glVertexArrayAttribBinding(_vao, 2, 0));
         offset += sizeof(float) * 3;
     }
 
     // UV map (if any)
     if(useUVs)
     {
-        glEnableVertexArrayAttrib(_vao, 3);
-        glVertexArrayAttribFormat(_vao, 3, 2, GL_FLOAT, GL_FALSE, offset);
-        glVertexArrayAttribBinding(_vao, 3, 0);
+        DRIVER_CALL(glEnableVertexArrayAttrib(_vao, 3));
+        DRIVER_CALL(glVertexArrayAttribFormat(_vao, 3, 2, GL_FLOAT, GL_FALSE, offset));
+        DRIVER_CALL(glVertexArrayAttribBinding(_vao, 3, 0));
         offset += sizeof(float) * 2;
     }
 
     // Vertex colors (if any)
     if(useColors)
     {
-        glEnableVertexArrayAttrib(_vao, 4);
-        glVertexArrayAttribFormat(_vao, 4, 4, GL_FLOAT, GL_FALSE, offset);
-        glVertexArrayAttribBinding(_vao, 4, 0);
+        DRIVER_CALL(glEnableVertexArrayAttrib(_vao, 4));
+        DRIVER_CALL(glVertexArrayAttribFormat(_vao, 4, 4, GL_FLOAT, GL_FALSE, offset));
+        DRIVER_CALL(glVertexArrayAttribBinding(_vao, 4, 0));
     }
 
-    glVertexArrayVertexBuffer(_vao, 0, _vbo, 0, stride);
+    DRIVER_CALL(glVertexArrayVertexBuffer(_vao, 0, _vbo, 0, stride));
 }
 }

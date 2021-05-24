@@ -74,12 +74,12 @@ void AbstractCamera::rotateZ(const float degrees)
     _transform.rotateZ(-degrees);
 }
 
-void AbstractCamera::rotate(const Quaterion &q)
+void AbstractCamera::rotate(const Quaternion &q)
 {
     _transform.rotate(-q);
 }
 
-void AbstractCamera::setRotation(const Quaterion &q)
+void AbstractCamera::setRotation(const Quaternion &q)
 {
     _transform.setRotation(-q);
 }

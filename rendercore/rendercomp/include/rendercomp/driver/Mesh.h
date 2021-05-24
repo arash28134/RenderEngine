@@ -18,6 +18,7 @@
 #pragma once
 
 #include "../core/resources/Mesh.h"
+#include "DriverDebug.h"
 
 #include <glad/glad.h>
 
@@ -28,9 +29,14 @@ class Mesh
 public:
 
     /**
-     * @brief Mesh interface class constructor for engine specific implementation
-     *        of a mesh. This is a RAII type class, for which whatever resources are
-     *        necessary, they must be allocated in the constructor, and released in the destructor
+     * @brief Creates an empty mesh.
+     */
+    Mesh() RC_NOEXCEPT;
+
+    /**
+     * @brief Allocates the needed GPU buffers and upload the mesh data to them.
+     *        This is a RAII type class, for which whatever resources are
+     *        necessary, they must be allocated in the constructor, and released in the destructor.
      * @param mesh Mesh object which contains source data for the engine specific implementation
      * @param uvChannel index of the uv channel to use. A value of -1 indicates to either ignore
      *        if the mesh has no uv channels, or to pick index 0 if available. Any other value
@@ -44,13 +50,13 @@ public:
      * @throws std::runtime_error if the mesh is null, or if the uvChannel/colorChannel do not
      *         match what is available in the mesh
      */
-    Mesh(data::Mesh* mesh, int32_t uvChannel = -1, int32_t colorChannel = -1);
+    Mesh(data::Mesh* mesh, int32_t uvChannel = -1, int32_t colorChannel = -1) RC_NOEXCEPT;
 
     ~Mesh();
 
-    void bind() const;
+    void bind() const RC_NOEXCEPT;
 
-    size_t getNumDrawElements() const
+    size_t getNumDrawElements() const RC_NOEXCEPT
     {
         return _numDrawVertex;
     }
@@ -61,7 +67,7 @@ private:
      *        using the Mesh object as source
      * @param mesh Mesh object containing the face information
      */
-    void _setFaces(data::Mesh* mesh);
+    void _setFaces(data::Mesh* mesh) RC_NOEXCEPT;
 
     /**
      * @brief _setVertexData Allocates the needed space in the array buffer and sets the
@@ -73,7 +79,7 @@ private:
      * @param uvChannel index of the uv channel to use.
      * @param colorChannel index of the color channel to use.
      */
-    void _setVertexData(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel);
+    void _setVertexData(data::Mesh* mesh, int32_t uvChannel, int32_t colorChannel) RC_NOEXCEPT;
 
     GLuint _vao;
     GLuint _ibo;

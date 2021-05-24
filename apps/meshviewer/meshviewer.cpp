@@ -74,6 +74,8 @@ int main(int argc, char** args)
         return 0;
     }
 
+    FilesystemUtils::init(args[0]);
+
     // Load the mesh from disk
     const String meshPath(args[1]);
     std::unique_ptr<data::Mesh> meshFile = Resources::load<data::Mesh>(meshPath);
@@ -113,10 +115,11 @@ int main(int argc, char** args)
     // Create a buffer to send the camera info to the GPU
     // (1 mat4 proj view and 1 vec4 for the cam position)
     const size_t uboBindingPoint {0};
-    UniformBuffer cameraBuffer (20 * sizeof(float), BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
+    UniformBuffer cameraBuffer (20 * sizeof(float),
+                                BufferDataPolicy::DYNAMIC,
+                                BufferUsagePolicy::DRAW);
     cameraBuffer.bindToPoint(uboBindingPoint);
-    std::function<void(char*, const size_t)> updateCameraBufferCb =
-    [camPtr = &camera](char* ptr, const size_t)
+    const auto updateCameraBufferCb = [camPtr = &camera](char* ptr, const size_t)
     {
         const Mat4 projView = camPtr->getProjectionMatrix() * camPtr->getViewMatrix();
         memcpy(ptr, &projView[0][0], 16 * sizeof(float));
@@ -128,7 +131,9 @@ int main(int argc, char** args)
 
     // Create a buffer to send the material information
     const size_t matUboBindingPoint {1};
-    UniformBuffer materialBuffer (sizeof(float) * 8, BufferDataPolicy::DYNAMIC, BufferUsagePolicy::DRAW);
+    UniformBuffer materialBuffer (sizeof(float) * 8,
+                                  BufferDataPolicy::DYNAMIC,
+                                  BufferUsagePolicy::DRAW);
     materialBuffer.bindToPoint(matUboBindingPoint);
     // Add a widget to handle it
     window.createWidget<ManipulatorWidget>("test_widget", &materialBuffer);
@@ -210,14 +215,16 @@ int main(int argc, char** args)
     engMesh.bind();
 
     // Create the program to shade the mesh, and bind it since it wont change
-    std::unique_ptr<data::ShaderCode> vertexShaderCode =
-            Resources::load<data::ShaderCode>("./pbr.vert");
-    std::unique_ptr<data::ShaderCode> fragmentShaderCode =
-            Resources::load<data::ShaderCode>("./pbr.frag");
+    auto vertexShaderCode = Resources::load<data::ShaderCode>(
+                FilesystemUtils::currentPath() + "/pbr.vert");
+    auto fragmentShaderCode = Resources::load<data::ShaderCode>(
+                FilesystemUtils::currentPath() + "/pbr.frag");
     Program pbrShader (vertexShaderCode->getRawCode(), fragmentShaderCode->getRawCode());
     pbrShader.use();
     pbrShader.setUniformBlockBinding("Camera", uboBindingPoint);
     pbrShader.setUniformBlockBinding("Material", matUboBindingPoint);
+
+    Graphics::enable(Feature::DEPTH_TEST);
 
     // Set the render loop body
     window.setDrawCallback([&]()

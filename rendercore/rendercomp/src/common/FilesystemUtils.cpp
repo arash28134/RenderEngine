@@ -27,6 +27,21 @@
 
 namespace rendercomp
 {
+String FilesystemUtils::_currentPath = String();
+
+void FilesystemUtils::init(char *executableCall)
+{
+    String executablePath (executableCall);
+    executablePath = getParentDirectory(executablePath);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+    char buf[256];
+    getcwd(buf, 256);
+#pragma GCC diagnostic pop
+    _currentPath = String(buf) + "/" + executablePath;
+}
+
 String FilesystemUtils::getFileExtension(const String& path)
 {
     auto dotPos = path.find(".");
@@ -88,6 +103,11 @@ String FilesystemUtils::getParentDirectory(const String& path)
 #endif
 */
     return resultPath;
+}
+
+const String& FilesystemUtils::currentPath()
+{
+    return _currentPath;
 }
 
 bool FilesystemUtils::exists(const String& path)

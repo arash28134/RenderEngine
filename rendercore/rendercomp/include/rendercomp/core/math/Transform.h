@@ -41,9 +41,9 @@ public:
     void rotateY(const float degree);
     void rotateZ(const float degree);
     void rotate(const Vec3f& angleAxis);
-    void rotate(const Quaterion& quat);
+    void rotate(const Quaternion& quat);
     void setRotation(const Vec3f& angleAxis);
-    void setRotation(const Quaterion& quat);
+    void setRotation(const Quaternion& quat);
 
     void scale(const Vec3f& delta);
     void setScale(const Vec3f& scale);
@@ -58,7 +58,7 @@ private:
 
 private:
     Vec3f _tranlsation;
-    Quaterion _rotation;
+    Quaternion _rotation;
     Vec3f _scale;
 
     Vec3f _forward;

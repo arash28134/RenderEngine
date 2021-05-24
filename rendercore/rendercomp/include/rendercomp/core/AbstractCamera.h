@@ -158,7 +158,7 @@ public:
      *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
      * @param q A quaternion representing a rotation to chain to the current camera's rotation.
      */
-    void rotate(const Quaterion& q);
+    void rotate(const Quaternion& q);
 
     /**
      * @brief setRotation Sets the camera orientation from the given quaternion parameter.
@@ -169,7 +169,7 @@ public:
      *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
      * @param q A quaternion representing the new camera rotation.
      */
-    void setRotation(const Quaterion& q);
+    void setRotation(const Quaternion& q);
 
     /**
      * @brief setNearPlane sets the distance to the near plane, in world units.

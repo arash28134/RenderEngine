@@ -1,3 +1,4 @@
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/meshviewer)
 
 add_executable(meshviewer meshviewer.cpp)
 

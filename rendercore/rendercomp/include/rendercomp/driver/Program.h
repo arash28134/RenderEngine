@@ -19,6 +19,8 @@
 
 #include "../common/Types.h"
 
+#include "DriverDebug.h"
+
 #include <glad/glad.h>
 
 namespace rendercomp
@@ -35,7 +37,7 @@ public:
      * @throws std::runtime_error if any shader code is empty, or if the compilation or linkage
      *         processes fail.
      */
-    Program(const String& vertexShader, const String& fragmentShader);
+    Program(const String& vertexShader, const String& fragmentShader) RC_NOEXCEPT;
 
     /**
      * @brief Program constructor. Creates a new OpenGL program with the given vertex, geometry
@@ -48,7 +50,7 @@ public:
      *         processes fail.
      */
     Program(const String& vertexShader, const String& geometryShader,
-            const String& fragmentShader);
+            const String& fragmentShader) RC_NOEXCEPT;
 
     /**
      * @brief Program constructor. Creates a new OpenGL program with the given vertex, tesselation
@@ -62,7 +64,7 @@ public:
      *         processes fail.
      */
     Program(const String& vertexShader, const String& tessCtrlShader,
-            const String& tessEvalShader, const String& fragmentShader);
+            const String& tessEvalShader, const String& fragmentShader) RC_NOEXCEPT;
 
     /**
      * @brief Program constructor. Creates a new OpenGL program with the given vertex, tesselation
@@ -78,7 +80,7 @@ public:
      */
     Program(const String& vertexShader, const String& tessCtrlShader,
             const String& tessEvalShader, const String& geomShader,
-            const String& fragmentShader);
+            const String& fragmentShader) RC_NOEXCEPT;
 
     ~Program();
 
@@ -86,14 +88,14 @@ public:
      * @brief use Indicates the current OpenGL context to use this program for any subsequent
      *        drawing call.
      */
-    void use() const;
+    void use() const RC_NOEXCEPT;
 
     /**
      * @brief getUniform Retrieves the location of the uniform named 'name' on this program
      * @param name String representing the name of the uniform in the shader code
      * @return the location of the uniform
      */
-    uint32_t getUniform(const String& name);
+    uint32_t getUniform(const String& name) const RC_NOEXCEPT;
 
     /**
      * @brief setUniformBlockBinding Sets the binding point of the uniform block
@@ -101,10 +103,10 @@ public:
      * @param name String representing the name of the uniform block in the shader code
      * @param bindingPoint the integer index in which the uniform block should be binded
      */
-    void setUniformBlockBinding(const String& name, const uint32_t bindingPoint);
+    void setUniformBlockBinding(const String& name, const uint32_t bindingPoint) const RC_NOEXCEPT;
 
     template<typename T>
-    void setUniform(const uint32_t, const T&)
+    void setUniform(const uint32_t, const T&) const RC_NOEXCEPT
     {
         throw std::runtime_error("No implementation to set uniforms of type "
                                   + std::string(typeid(T).name()));
@@ -119,7 +121,7 @@ private:
      * @throws std::runtime_error if any error arises from compiling individual shader code or
      *         during program linkage
      */
-    void _initialize(const Map<GLenum, const String&> shaderCodes);
+    void _initialize(const Map<GLenum, const String&> shaderCodes) RC_NOEXCEPT;
 
     /**
      * @brief _compileShader Compiles the given type of shader using the provided
@@ -129,7 +131,7 @@ private:
      * @return The OpenGL shader handle
      * @throws std::runtime_error if there is any error during shader compilation
      */
-    GLuint _compileShader(const GLenum type, const String& code);
+    GLuint _compileShader(const GLenum type, const String& code) const RC_NOEXCEPT;
 
     /**
      * @brief _checkLinkage Checkes wether the linkage process of the program was
@@ -144,31 +146,31 @@ private:
 };
 
 template<>
-void Program::setUniform<float>(const uint32_t uniform, const float& value);
+void Program::setUniform<float>(const uint32_t uniform, const float& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec2f>(const uint32_t uniform, const Vec2f& value);
+void Program::setUniform<Vec2f>(const uint32_t uniform, const Vec2f& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec3f>(const uint32_t uniform, const Vec3f& value);
+void Program::setUniform<Vec3f>(const uint32_t uniform, const Vec3f& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec4f>(const uint32_t uniform, const Vec4f& value);
+void Program::setUniform<Vec4f>(const uint32_t uniform, const Vec4f& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<int32_t>(const uint32_t uniform, const int32_t& value);
+void Program::setUniform<int32_t>(const uint32_t uniform, const int32_t& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec2i>(const uint32_t uniform, const Vec2i& value);
+void Program::setUniform<Vec2i>(const uint32_t uniform, const Vec2i& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec3i>(const uint32_t uniform, const Vec3i& value);
+void Program::setUniform<Vec3i>(const uint32_t uniform, const Vec3i& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec4i>(const uint32_t uniform, const Vec4i& value);
+void Program::setUniform<Vec4i>(const uint32_t uniform, const Vec4i& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<uint32_t>(const uint32_t uniform, const uint32_t& value);
+void Program::setUniform<uint32_t>(const uint32_t uniform, const uint32_t& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec2ui>(const uint32_t uniform, const Vec2ui& value);
+void Program::setUniform<Vec2ui>(const uint32_t uniform, const Vec2ui& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec3ui>(const uint32_t uniform, const Vec3ui& value);
+void Program::setUniform<Vec3ui>(const uint32_t uniform, const Vec3ui& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Vec4ui>(const uint32_t uniform, const Vec4ui& value);
+void Program::setUniform<Vec4ui>(const uint32_t uniform, const Vec4ui& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Mat3>(const uint32_t uniform, const Mat3& value);
+void Program::setUniform<Mat3>(const uint32_t uniform, const Mat3& value) const RC_NOEXCEPT;
 template<>
-void Program::setUniform<Mat4>(const uint32_t uniform, const Mat4& value);
+void Program::setUniform<Mat4>(const uint32_t uniform, const Mat4& value) const RC_NOEXCEPT;
 }

@@ -29,38 +29,41 @@ void DeleteShaders(const Vector<GLuint>& handles)
     }
 }
 
-Program::Program(const String& vertexShader, const String& fragmentShader)
+Program::Program(const String& vertexShader, const String& fragmentShader) RC_NOEXCEPT
  : _programHandle(GL_INVALID_VALUE)
 {
+#ifdef RENDERCOMP_DEBUG
     if(vertexShader.empty())
         throw std::runtime_error("Vertex shader must be a valid GLSL code");
     if(fragmentShader.empty())
         throw std::runtime_error("Fragment shader must be a valid GLSL code");
-
+#endif
     _initialize({{GL_VERTEX_SHADER, vertexShader},
                  {GL_FRAGMENT_SHADER, fragmentShader}});
 }
 
 Program::Program(const String& vertexShader, const String& geometryShader,
-                 const String& fragmentShader)
+                 const String& fragmentShader) RC_NOEXCEPT
  : _programHandle(GL_INVALID_VALUE)
 {
+#ifdef RENDERCOMP_DEBUG
     if(vertexShader.empty())
         throw std::runtime_error("Vertex shader must be a valid GLSL code");
     if(geometryShader.empty())
         throw std::runtime_error("Geometry shader must be a valid GLSL code");
     if(fragmentShader.empty())
         throw std::runtime_error("Fragment shader must be a valid GLSL code");
-
+#endif
     _initialize({{GL_VERTEX_SHADER, vertexShader},
                  {GL_GEOMETRY_SHADER, geometryShader},
                  {GL_FRAGMENT_SHADER, fragmentShader}});
 }
 
 Program::Program(const String& vertexShader, const String& tessCtrlShader,
-                 const String& tessEvalShader, const String& fragmentShader)
+                 const String& tessEvalShader, const String& fragmentShader) RC_NOEXCEPT
  : _programHandle(GL_INVALID_VALUE)
 {
+#ifdef RENDERCOMP_DEBUG
     if(vertexShader.empty())
         throw std::runtime_error("Vertex shader must be a valid GLSL code");
     if(tessCtrlShader.empty())
@@ -69,7 +72,7 @@ Program::Program(const String& vertexShader, const String& tessCtrlShader,
         throw std::runtime_error("Tesselation evaluation shader must be a valid GLSL code");
     if(fragmentShader.empty())
         throw std::runtime_error("Fragment shader must be a valid GLSL code");
-
+#endif
     _initialize({{GL_VERTEX_SHADER, vertexShader},
                  {GL_TESS_CONTROL_SHADER, tessCtrlShader},
                  {GL_TESS_EVALUATION_SHADER, tessEvalShader},
@@ -78,9 +81,10 @@ Program::Program(const String& vertexShader, const String& tessCtrlShader,
 
 Program::Program(const String& vertexShader, const String& tessCtrlShader,
                  const String& tessEvalShader, const String& geomShader,
-                 const String& fragmentShader)
+                 const String& fragmentShader) RC_NOEXCEPT
  : _programHandle(GL_INVALID_VALUE)
 {
+#ifdef RENDERCOMP_DEBUG
     if(vertexShader.empty())
         throw std::runtime_error("Vertex shader must be a valid GLSL code");
     if(tessCtrlShader.empty())
@@ -91,6 +95,7 @@ Program::Program(const String& vertexShader, const String& tessCtrlShader,
         throw std::runtime_error("Geometry shader must be a valid GLSL code");
     if(fragmentShader.empty())
         throw std::runtime_error("Fragment shader must be a valid GLSL code");
+#endif
 
     _initialize({{GL_VERTEX_SHADER, vertexShader},
                  {GL_TESS_CONTROL_SHADER, tessCtrlShader},
@@ -102,18 +107,18 @@ Program::Program(const String& vertexShader, const String& tessCtrlShader,
 Program::~Program()
 {
     if(_programHandle != GL_INVALID_VALUE)
-        glDeleteProgram(_programHandle);
+        DRIVER_CALL_NOTHROW(glDeleteProgram(_programHandle));
 }
 
-void Program::use() const
+void Program::use() const RC_NOEXCEPT
 {
-    glUseProgram(_programHandle);
+    DRIVER_CALL(glUseProgram(_programHandle));
 }
 
-void Program::_initialize(const Map<GLenum, const String&> shaderCodes)
+void Program::_initialize(const Map<GLenum, const String&> shaderCodes) RC_NOEXCEPT
 {
     // Create the program
-    _programHandle = glCreateProgram();
+    _programHandle = DRIVER_CALL(glCreateProgram());
 
     // Try to compile the shaders and attach them to the program
     auto it = shaderCodes.begin();
@@ -125,19 +130,23 @@ void Program::_initialize(const Map<GLenum, const String&> shaderCodes)
         {
             const GLuint shaderHandle = _compileShader(it->first, it->second);
             shaderHandles.push_back(shaderHandle);
-            glAttachShader(_programHandle, shaderHandle);
+            DRIVER_CALL(glAttachShader(_programHandle, shaderHandle));
         }
         catch (const std::exception& e)
         {
             // In the event of an error, clean up any successfully compiled shader prior to this
             // one
             DeleteShaders(shaderHandles);
+#ifdef RENDERCOMP_DEBUG
             throw std::runtime_error("Error while compiling shader:\n" + std::string(e.what()));
+#endif
         }
     }
 
     // Try to link the program
-    glLinkProgram(_programHandle);
+    DRIVER_CALL(glLinkProgram(_programHandle));
+
+#ifdef RENDERCOMP_DEBUG
     try
     {
         _checkLinkage();
@@ -148,135 +157,138 @@ void Program::_initialize(const Map<GLenum, const String&> shaderCodes)
         DeleteShaders(shaderHandles);
         throw std::runtime_error("Error while linking program:\n" + std::string(e.what()));
     }
+#endif
 
     // After everything is successful, clean the shader codes
     DeleteShaders(shaderHandles);
 }
 
-GLuint Program::_compileShader(const GLenum type, const String& code)
+GLuint Program::_compileShader(const GLenum type, const String& code) const RC_NOEXCEPT
 {
     GLuint shader = glCreateShader(type);
     const size_t codeLen = code.length();
     const char* rawCode = code.data();
-    glShaderSource(shader, 1, (const GLchar **)&rawCode, (const GLint *)&codeLen);
-    glCompileShader(shader);
+    DRIVER_CALL(glShaderSource(shader, 1, (const GLchar **)&rawCode, (const GLint *)&codeLen));
+    DRIVER_CALL(glCompileShader(shader));
 
+#ifdef RENDERCOMP_DEBUG
     GLint compiled;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    DRIVER_CALL(glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled));
     if (!compiled)
     {
         GLint logLen;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen);
+        DRIVER_CALL(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen));
         std::string logString (logLen, '\0');
-        glGetShaderInfoLog(shader, logLen, NULL, (GLchar*)logString.data());
-        glDeleteShader(shader);
+        DRIVER_CALL(glGetShaderInfoLog(shader, logLen, NULL, (GLchar*)logString.data()));
+        DRIVER_CALL(glDeleteShader(shader));
         throw std::runtime_error(logString);
     }
-
+#endif
     return shader;
 }
 
 void Program::_checkLinkage()
 {
     int32_t linked;
-    glGetProgramiv(_programHandle, GL_LINK_STATUS, &linked);
+    DRIVER_CALL(glGetProgramiv(_programHandle, GL_LINK_STATUS, &linked));
     if (!linked)
     {
         GLint logLen;
-        glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logLen);
+        DRIVER_CALL(glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logLen));
         std::string logString (static_cast<std::string::size_type>(logLen), '\0');
-        glGetProgramInfoLog(_programHandle, logLen, NULL, (GLchar*)logString.data());
+        DRIVER_CALL(glGetProgramInfoLog(_programHandle, logLen, NULL, (GLchar*)logString.data()));
         throw std::runtime_error(logString);
     }
 }
 
 template<>
-void Program::setUniform<float>(const uint32_t uniform, const float& value)
+void Program::setUniform<float>(const uint32_t uniform, const float& value) const RC_NOEXCEPT
 {
-    glUniform1f(uniform,  value);
+    DRIVER_CALL(glUniform1f(uniform,  value));
 }
 
 template<>
-void Program::setUniform<Vec2f>(const uint32_t uniform, const Vec2f& value)
+void Program::setUniform<Vec2f>(const uint32_t uniform, const Vec2f& value) const RC_NOEXCEPT
 {
-    glUniform2fv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform2fv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec3f>(const uint32_t uniform, const Vec3f& value)
+void Program::setUniform<Vec3f>(const uint32_t uniform, const Vec3f& value) const RC_NOEXCEPT
 {
-    glUniform3fv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform3fv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec4f>(const uint32_t uniform, const Vec4f& value)
+void Program::setUniform<Vec4f>(const uint32_t uniform, const Vec4f& value) const RC_NOEXCEPT
 {
-    glUniform4fv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform4fv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<int32_t>(const uint32_t uniform, const int32_t& value)
+void Program::setUniform<int32_t>(const uint32_t uniform, const int32_t& value) const RC_NOEXCEPT
 {
-    glUniform1i(uniform, value);
+    DRIVER_CALL(glUniform1i(uniform, value));
 }
 
 template<>
-void Program::setUniform<Vec2i>(const uint32_t uniform, const Vec2i& value)
+void Program::setUniform<Vec2i>(const uint32_t uniform, const Vec2i& value) const RC_NOEXCEPT
 {
-    glUniform2iv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform2iv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec3i>(const uint32_t uniform, const Vec3i& value)
+void Program::setUniform<Vec3i>(const uint32_t uniform, const Vec3i& value) const RC_NOEXCEPT
 {
-    glUniform3iv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform3iv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec4i>(const uint32_t uniform, const Vec4i& value)
+void Program::setUniform<Vec4i>(const uint32_t uniform, const Vec4i& value) const RC_NOEXCEPT
 {
-    glUniform4iv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform4iv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<uint32_t>(const uint32_t uniform, const uint32_t& value)
+void Program::setUniform<uint32_t>(const uint32_t uniform, const uint32_t& value) const RC_NOEXCEPT
 {
-    glUniform1ui(uniform, value);
+    DRIVER_CALL(glUniform1ui(uniform, value));
 }
 
 template<>
-void Program::setUniform<Vec2ui>(const uint32_t uniform, const Vec2ui& value)
+void Program::setUniform<Vec2ui>(const uint32_t uniform, const Vec2ui& value) const RC_NOEXCEPT
 {
-    glUniform2uiv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform2uiv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec3ui>(const uint32_t uniform, const Vec3ui& value)
+void Program::setUniform<Vec3ui>(const uint32_t uniform, const Vec3ui& value) const RC_NOEXCEPT
 {
-    glUniform3uiv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform3uiv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Vec4ui>(const uint32_t uniform, const Vec4ui& value)
+void Program::setUniform<Vec4ui>(const uint32_t uniform, const Vec4ui& value) const RC_NOEXCEPT
 {
-    glUniform4uiv(uniform, 1, &value[0]);
+    DRIVER_CALL(glUniform4uiv(uniform, 1, &value[0]));
 }
 
 template<>
-void Program::setUniform<Mat3>(const uint32_t uniform, const Mat3& value)
+void Program::setUniform<Mat3>(const uint32_t uniform, const Mat3& value) const RC_NOEXCEPT
 {
-    glUniformMatrix3fv(uniform, 1, GL_FALSE, &value[0][0]);
+    DRIVER_CALL(glUniformMatrix3fv(uniform, 1, GL_FALSE, &value[0][0]));
 }
 
 template<>
-void Program::setUniform<Mat4>(const uint32_t uniform, const Mat4& value)
+void Program::setUniform<Mat4>(const uint32_t uniform, const Mat4& value) const RC_NOEXCEPT
 {
-    glUniformMatrix4fv(uniform, 1, GL_FALSE, &value[0][0]);
+    DRIVER_CALL(glUniformMatrix4fv(uniform, 1, GL_FALSE, &value[0][0]));
 }
 
-void Program::setUniformBlockBinding(const String& name, const uint32_t bindingPoint)
+void Program::setUniformBlockBinding(const String& name,
+                                     const uint32_t bindingPoint) const RC_NOEXCEPT
 {
-    const GLuint blockIndex = glGetUniformBlockIndex(_programHandle, name.c_str());
-    glUniformBlockBinding(_programHandle, blockIndex, bindingPoint);
+    const GLuint blockIndex = DRIVER_CALL(glGetUniformBlockIndex(_programHandle, name.c_str()));
+    DRIVER_CALL(glUniformBlockBinding(_programHandle, blockIndex, bindingPoint));
 }
 }

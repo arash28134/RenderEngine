@@ -17,9 +17,11 @@
 
 #pragma once
 
-#include <rendercomp/common/Types.h>
+#include "../common/Types.h"
 
-#include <rendercomp/ui/Widget.h>
+#include "../ui/Widget.h"
+
+#include "DriverDebug.h"
 
 #include <functional>
 #include <memory>
@@ -39,14 +41,14 @@ enum class FPS : uint8_t
 
 struct WindowConfiguration
 {
-    String title;
-    uint32_t width;
-    uint32_t height;
-    uint32_t xPos;
-    uint32_t yPos;
-    Vec4f clearColor;
-    FPS maxFPS;
-    bool resizable;
+    String title {"Title not set!!"};
+    uint32_t width {800u};
+    uint32_t height {600u};
+    uint32_t xPos {0u};
+    uint32_t yPos {0u};
+    Vec4f clearColor {0.f, 0.f, 0.f, 1.f};
+    FPS maxFPS {FPS::FPS_60};
+    bool resizable {false};
 };
 
 enum class Key: uint8_t
@@ -213,7 +215,7 @@ enum class MouseButtonAction: uint8_t
 class Window
 {
 public:
-    Window(const WindowConfiguration&);
+    Window(const WindowConfiguration&) RC_NOEXCEPT;
     ~Window();
 
     Window(const Window&) = delete;
@@ -365,7 +367,7 @@ public:
         _drawCb = drawFunc;
     }
 
-    void renderLoop();
+    void renderLoop() RC_NOEXCEPT;
 
 public:
     std::function<void(const Key, const KeyAction, const InputMod)> _keyboardCb;
