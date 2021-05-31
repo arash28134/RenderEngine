@@ -28,7 +28,7 @@ class Texture3D
 {
 public:
     Texture3D(const data::Volume* const volume,
-              const uint32_t mipLevels) RC_NOEXCEPT;
+              const uint32_t mipLevels = 1) RC_NOEXCEPT;
 
     Texture3D(const data::Volume* const volume,
               const uint32_t mipLevels,

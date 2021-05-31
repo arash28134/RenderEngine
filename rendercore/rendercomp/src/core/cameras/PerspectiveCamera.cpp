@@ -19,30 +19,32 @@
 
 namespace rendercomp
 {
-PerspectiveCamera::PerspectiveCamera(const float near, const float far, const float aspectRatio,
-                                     const float fovy)
+PerspectiveCamera::PerspectiveCamera(const float near,
+                                     const float far,
+                                     const float aspectRatio,
+                                     const float fovy) RC_NOEXCEPT
  : AbstractCamera(near, far, aspectRatio)
  , _fovy(fovy)
 {
     _updateProjectionImpl();
 }
 
-void PerspectiveCamera::setFovy(const float newFovy)
+void PerspectiveCamera::setFovy(const float newFovy) RC_NOEXCEPT
 {
-    _fovy = std::min<float>(std::max<float>(newFovy, 1.f), 180.f);
+    _fovy = newFovy;
 }
 
-float PerspectiveCamera::getFovy() const
+float PerspectiveCamera::getFovy() const RC_NOEXCEPT
 {
     return _fovy;
 }
 
-void PerspectiveCamera::updateProjection()
+void PerspectiveCamera::updateProjection() RC_NOEXCEPT
 {
     _updateProjectionImpl();
 }
 
-void PerspectiveCamera::_updateProjectionImpl()
+void PerspectiveCamera::_updateProjectionImpl() RC_NOEXCEPT
 {
     const float radFovy = glm::radians(_fovy);
     _projection = Mat4(0.0f);

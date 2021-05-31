@@ -41,16 +41,18 @@ public:
      *        width = height * aspectRatio
      * @param aspectRatio image aspect ratio (width / height)
      */
-    OrthographicCamera(const float near, const float far,const float aspectRatio,
-                       const float height);
+    OrthographicCamera(const float near,
+                       const float far,
+                       const float aspectRatio,
+                       const float height) RC_NOEXCEPT;
 
-    ~OrthographicCamera() = default;
+    ~OrthographicCamera() final = default;
 
-    OrthographicCamera(const OrthographicCamera&) = default;
-    OrthographicCamera& operator=(const OrthographicCamera&) = default;
+    OrthographicCamera(const OrthographicCamera&) RC_NOEXCEPT = default;
+    OrthographicCamera& operator=(const OrthographicCamera&) RC_NOEXCEPT = default;
 
-    OrthographicCamera(OrthographicCamera&&) = default;
-    OrthographicCamera& operator=(OrthographicCamera&&) = default;
+    OrthographicCamera(OrthographicCamera&&) RC_NOEXCEPT = default;
+    OrthographicCamera& operator=(OrthographicCamera&&) RC_NOEXCEPT = default;
 
     /**
      * @brief setHeight Sets the vertical length (in world units) of the parallel frustrum that this
@@ -59,23 +61,23 @@ public:
      *        CALLING updateProjection() method.
      * @param height Vertical length in world units of the parallel frustrum of this camera
      */
-    void setHeight(const float height);
+    void setHeight(const float height) RC_NOEXCEPT;
 
     /**
      * @brief getHeight Returns the vertical length of this camera's parallel frustrum
      * @return the vertical frustrum length
      */
-    float getHeight() const;
+    float getHeight() const RC_NOEXCEPT;
 
     /**
      * @brief updateProjection Computes the projection matrix used the current projection values of
      *        this object. This function must be called MANUALLY everytime it is desired to update
      *        the projection matrix.
      */
-    void updateProjection();
+    void updateProjection() RC_NOEXCEPT final;
 
 private:
-    void _updateProjectionImpl();
+    void _updateProjectionImpl() RC_NOEXCEPT;
 
     float _height;
 };

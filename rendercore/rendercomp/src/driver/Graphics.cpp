@@ -73,6 +73,11 @@ void Graphics::disable(const Feature feature) RC_NOEXCEPT
     DRIVER_CALL(glDisable(static_cast<uint32_t>(feature)));
 }
 
+void Graphics::setBlendFunc(const BlendFunc srcFunc, const BlendFunc dstFunc) RC_NOEXCEPT
+{
+    DRIVER_CALL(glBlendFunc(static_cast<uint32_t>(srcFunc), static_cast<uint32_t>(dstFunc)));
+}
+
 void Graphics::clearBuffers(const BufferFlag flagMask) RC_NOEXCEPT
 {
     DRIVER_CALL(glClear(static_cast<uint32_t>(flagMask)));

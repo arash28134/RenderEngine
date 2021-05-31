@@ -104,6 +104,28 @@ enum class Feature : uint32_t
     PROGRAM_POINT_SIZE = GL_PROGRAM_POINT_SIZE
 };
 
+enum class BlendFunc : uint32_t
+{
+    ZERO = GL_ZERO,
+    ONE = GL_ONE,
+    SRC_COLOR = GL_SRC_COLOR,
+    ONE_MINUS_SRC_COLOR = GL_ONE_MINUS_SRC_COLOR,
+    DST_COLOR = GL_DST_COLOR,
+    ONE_MINUS_DST_COLOR = GL_ONE_MINUS_DST_COLOR,
+    SRC_ALPHA = GL_SRC_ALPHA,
+    ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA,
+    DST_ALPHA = GL_DST_ALPHA,
+    ONE_MINUS_DST_ALPHA = GL_ONE_MINUS_DST_ALPHA,
+    CONSTANT_COLOR = GL_CONSTANT_COLOR,
+    ONE_MINUS_CONSTANT_COLOR = GL_ONE_MINUS_CONSTANT_COLOR,
+    CONSTANT_ALPHA = GL_CONSTANT_ALPHA,
+    ONE_MINUS_CONSTANT_ALPHA = GL_ONE_MINUS_CONSTANT_ALPHA,
+    SRC_ALPHA_SATURATE = GL_SRC_ALPHA_SATURATE,
+    SRC1_COLOR = GL_SRC1_COLOR,
+    ONE_MINUS_SRC1_COLOR = GL_ONE_MINUS_SRC1_COLOR,
+    SRC1_ALPHA = GL_ONE_MINUS_SRC1_ALPHA
+};
+
 /**
  * @brief The IndirectCommand struct
  * The IndirectCommand struct is a small buffer with the configuraiton
@@ -139,6 +161,14 @@ public:
      * @param A valid feature enum key
      */
     static void disable(const Feature feature) RC_NOEXCEPT;
+
+    /**
+     * @brief setColorBlendFunc stablishes the blend function of the color values in the
+     *        current framebuffer.
+     * @param srcFunc Function used to treat the color which is to be added to the buffer
+     * @param dstFunc Function used to treat the color which is already stored in the buffer
+     */
+    static void setBlendFunc(const BlendFunc srcFunc, const BlendFunc dstFunc) RC_NOEXCEPT;
 
     /**
      * @brief clearBuffers Issues a clear buffer command for the underlying graphics driver.

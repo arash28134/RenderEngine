@@ -1,4 +1,5 @@
 set(RENDERCOMP_CORE_HEADERS
+    include/rendercomp/common/Debug.h
     include/rendercomp/common/FilesystemUtils.h
     include/rendercomp/common/Types.h
     include/rendercomp/core/BoundingBox.h

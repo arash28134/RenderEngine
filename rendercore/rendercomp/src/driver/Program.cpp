@@ -201,6 +201,11 @@ void Program::_checkLinkage()
     }
 }
 
+uint32_t Program::getUniform(const String& name) const RC_NOEXCEPT
+{
+    return glGetUniformLocation(_programHandle, name.c_str());
+}
+
 template<>
 void Program::setUniform<float>(const uint32_t uniform, const float& value) const RC_NOEXCEPT
 {

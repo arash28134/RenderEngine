@@ -15,6 +15,35 @@
 const uint32_t W_WIDTH = 1536;
 const uint32_t W_HEIGHT = 864;
 
+rendercomp::data::Mesh CreateCubeMesh() noexcept
+{
+    rendercomp::data::Mesh cube;
+    cube.vertexPositions.reserve(8);
+    cube.vertexPositions.emplace_back(-1.f, 1.f, -1.f);
+    cube.vertexPositions.emplace_back(-1.f, -1.f, -1.f);
+    cube.vertexPositions.emplace_back(1.f, 1.f, -1.f);
+    cube.vertexPositions.emplace_back(1.f, -1.f, -1.f);
+    cube.vertexPositions.emplace_back(-1.f, 1.f, 1.f);
+    cube.vertexPositions.emplace_back(-1.f, -1.f, 1.f);
+    cube.vertexPositions.emplace_back(1.f, 1.f, 1.f);
+    cube.vertexPositions.emplace_back(1.f, -1.f, 1.f);
+    cube.faces.reserve(12);
+    cube.faces.emplace_back(0, 1, 3); // front
+    cube.faces.emplace_back(0, 3, 2);
+    cube.faces.emplace_back(4, 0, 2); // top
+    cube.faces.emplace_back(4, 2, 6);
+    cube.faces.emplace_back(2, 3, 7); // right
+    cube.faces.emplace_back(2, 7, 6);
+    cube.faces.emplace_back(6, 7, 5); // back
+    cube.faces.emplace_back(6, 5, 4);
+    cube.faces.emplace_back(4, 5, 1); // left
+    cube.faces.emplace_back(4, 1, 0);
+    cube.faces.emplace_back(1, 5, 7); // bottom
+    cube.faces.emplace_back(1, 7, 3);
+
+    return cube;
+}
+
 int main(int, char** argv)
 {
     using namespace rendercomp;
@@ -120,29 +149,7 @@ int main(int, char** argv)
     });
 
     // Create an unit cube
-    data::Mesh cube;
-    cube.vertexPositions.reserve(8);
-    cube.vertexPositions.emplace_back(-1.f, 1.f, -1.f);
-    cube.vertexPositions.emplace_back(-1.f, -1.f, -1.f);
-    cube.vertexPositions.emplace_back(1.f, 1.f, -1.f);
-    cube.vertexPositions.emplace_back(1.f, -1.f, -1.f);
-    cube.vertexPositions.emplace_back(-1.f, 1.f, 1.f);
-    cube.vertexPositions.emplace_back(-1.f, -1.f, 1.f);
-    cube.vertexPositions.emplace_back(1.f, 1.f, 1.f);
-    cube.vertexPositions.emplace_back(1.f, -1.f, 1.f);
-    cube.faces.reserve(12);
-    cube.faces.emplace_back(0, 1, 3); // front
-    cube.faces.emplace_back(0, 3, 2);
-    cube.faces.emplace_back(4, 0, 2); // top
-    cube.faces.emplace_back(4, 2, 6);
-    cube.faces.emplace_back(2, 3, 7); // right
-    cube.faces.emplace_back(2, 7, 6);
-    cube.faces.emplace_back(6, 7, 5); // back
-    cube.faces.emplace_back(6, 5, 4);
-    cube.faces.emplace_back(4, 5, 1); // left
-    cube.faces.emplace_back(4, 1, 0);
-    cube.faces.emplace_back(1, 5, 7); // bottom
-    cube.faces.emplace_back(1, 7, 3);
+    data::Mesh cube = CreateCubeMesh();
     const Mesh mesh(&cube);
     mesh.bind();
 

@@ -61,6 +61,7 @@ Texture3D::Texture3D(const data::Volume* const volume,
                                     static_cast<uint32_t>(format),
                                     static_cast<uint32_t>(pixelFormat),
                                     volume->data.data()));
+
     if(mipLevels > 1)
         DRIVER_CALL(glGenerateTextureMipmap(_texHandle));
 }

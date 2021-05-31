@@ -21,12 +21,12 @@
 #include <iostream>
 #include <glad/glad.h>
 
+#include "../common/Debug.h"
+
 #ifndef RENDERCOMP_DEBUG
-#define RC_NOEXCEPT noexcept
 #define DRIVER_CALL(call) call
 #define DRIVER_CALL_NOTHROW(call) call
 #else
-#define RC_NOEXCEPT
 #define DRIVER_CALL(call) \
     call; \
     { \

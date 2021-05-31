@@ -135,7 +135,7 @@ TexturePixelFormat TextureUtils::guessTexturePixelFormat(const uint8_t bytesPerC
         return TexturePixelFormat::UNSIGNED_BYTE;
     case 2:
         return TexturePixelFormat::UNSIGNED_SHORT;
-   case 4:
+    case 4:
         return TexturePixelFormat::UNSIGNED_INT;
     }
 

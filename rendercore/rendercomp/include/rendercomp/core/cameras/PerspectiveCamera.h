@@ -43,16 +43,18 @@ public:
      * @param aspectRatio Image aspect ratio that will be generated with this projection. It is
      *        computed as width / height of the image.
      */
-    PerspectiveCamera(const float near, const float far, const float aspectRatio,
-                      const float fovy);
+    PerspectiveCamera(const float near,
+                      const float far,
+                      const float aspectRatio,
+                      const float fovy) RC_NOEXCEPT;
 
     ~PerspectiveCamera() = default;
 
-    PerspectiveCamera(const PerspectiveCamera&) = default;
-    PerspectiveCamera& operator=(const PerspectiveCamera&) = default;
+    PerspectiveCamera(const PerspectiveCamera&) RC_NOEXCEPT = default;
+    PerspectiveCamera& operator=(const PerspectiveCamera&) RC_NOEXCEPT = default;
 
-    PerspectiveCamera(PerspectiveCamera&&) = default;
-    PerspectiveCamera& operator=(PerspectiveCamera&&) = default;
+    PerspectiveCamera(PerspectiveCamera&&) RC_NOEXCEPT = default;
+    PerspectiveCamera& operator=(PerspectiveCamera&&) RC_NOEXCEPT = default;
 
     /**
      * @brief setFovy sets the vertical field of view.
@@ -60,23 +62,23 @@ public:
      *        CALLING updateProjection() method.
      * @param newFovy the value for the new field of view angle in degrees
      */
-    void setFovy(const float newFovy);
+    void setFovy(const float newFovy) RC_NOEXCEPT;
 
     /**
      * @brief getFovy returns the current value of the vertical field of view (in degrees)
      * @return current vertical field of view (in degrees)
      */
-    float getFovy() const;
+    float getFovy() const RC_NOEXCEPT;
 
     /**
      * @brief updateProjection Computes the projection matrix used the current projection values of
      *        this object. This function must be called MANUALLY everytime it is desired to update
      *        the projection matrix.
      */
-    void updateProjection();
+    void updateProjection() RC_NOEXCEPT final;
 
 private:
-    void _updateProjectionImpl();
+    void _updateProjectionImpl() RC_NOEXCEPT;
 
     float _fovy;
 };

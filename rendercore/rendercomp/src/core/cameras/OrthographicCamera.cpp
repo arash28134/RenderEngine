@@ -19,25 +19,27 @@
 
 namespace rendercomp
 {
-OrthographicCamera::OrthographicCamera(const float near, const float far, const float aspectRatio,
-                                       const float height)
+OrthographicCamera::OrthographicCamera(const float near,
+                                       const float far,
+                                       const float aspectRatio,
+                                       const float height) RC_NOEXCEPT
  : AbstractCamera(near, far, aspectRatio)
  , _height(height)
 {
     _updateProjectionImpl();
 }
 
-void OrthographicCamera::setHeight(const float height)
+void OrthographicCamera::setHeight(const float height) RC_NOEXCEPT
 {
-    _height = std::max<float>(height, 0.01f);
+    _height = height;
 }
 
-void OrthographicCamera::updateProjection()
+void OrthographicCamera::updateProjection() RC_NOEXCEPT
 {
     _updateProjectionImpl();
 }
 
-void OrthographicCamera::_updateProjectionImpl()
+void OrthographicCamera::_updateProjectionImpl() RC_NOEXCEPT
 {
     const float width = _height * _aspectRatio;
 
