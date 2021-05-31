@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "../../common/Debug.h"
 #include "../../common/Types.h"
 
 namespace rendercomp
@@ -24,43 +25,76 @@ namespace rendercomp
 class Transform
 {
 public:
-    Transform();
+    Transform() RC_NOEXCEPT;
 
-    Transform(const Transform&) = default;
-    Transform(Transform&&) = default;
+    Transform(const Transform&) RC_NOEXCEPT = default;
+    Transform(Transform&&) RC_NOEXCEPT = default;
 
-    Transform& operator=(const Transform&) = default;
-    Transform& operator=(Transform&&) = default;
+    Transform& operator=(const Transform&) RC_NOEXCEPT = default;
+    Transform& operator=(Transform&&) RC_NOEXCEPT = default;
 
     ~Transform() = default;
 
-    void translate(const Vec3f& delta);
-    void setTranslation(const Vec3f& translation);
+    void translate(const Vec3f& delta) RC_NOEXCEPT;
+    void setTranslation(const Vec3f& translation) RC_NOEXCEPT;
 
-    void rotateX(const float degree);
-    void rotateY(const float degree);
-    void rotateZ(const float degree);
-    void rotate(const Vec3f& angleAxis);
-    void rotate(const Quaternion& quat);
-    void setRotation(const Vec3f& angleAxis);
-    void setRotation(const Quaternion& quat);
+    void rotateX(const float degree) RC_NOEXCEPT;
+    void rotateY(const float degree) RC_NOEXCEPT;
+    void rotateZ(const float degree) RC_NOEXCEPT;
+    void rotate(const Vec3f& angleAxis) RC_NOEXCEPT;
+    void rotate(const Quaternion& quat) RC_NOEXCEPT;
+    void setRotation(const Vec3f& angleAxis) RC_NOEXCEPT;
+    void setRotation(const Quaternion& quat) RC_NOEXCEPT;
 
-    void scale(const Vec3f& delta);
-    void setScale(const Vec3f& scale);
+    void scale(const Vec3f& delta) RC_NOEXCEPT;
+    void setScale(const Vec3f& scale) RC_NOEXCEPT;
 
-    Mat4 toMatrix() const;
+    Mat4 toMatrix() const RC_NOEXCEPT;
 
-    const Vec3f& forward() const;
-    const Vec3f& up() const;
-    const Vec3f& right() const;
+    /**
+     * @brief Returns the cartesian coordinates, in world space, represented by
+     *        this transform
+     */
+    const Vec3f& worldPosition() const RC_NOEXCEPT { return _position; }
+
+    /**
+     * @brief Returns the forward orientation, in world space, respresented by this transform
+     */
+    const Vec3f& forward() const RC_NOEXCEPT { return _forward; }
+
+    /**
+     * @brief Returns the upwards orientation, in world space, represented by this transform
+     */
+    const Vec3f& up() const RC_NOEXCEPT { return _up; }
+
+    /**
+     * @brief Returns the rightwards orientation, in world space, represented by this transform
+     */
+    const Vec3f& right() const RC_NOEXCEPT { return _right; };
+
+    /**
+     * @brief Returns the translation vector of this transform
+     */
+    const Vec3f& translation() const RC_NOEXCEPT { return _translation; }
+
+    /**
+     * @brief Returns the quaternion that represents the rotation of this transform
+     */
+    const Quaternion& rotation() const RC_NOEXCEPT { return _rotation; }
+
+    /**
+     * @brief Returns the scale vector that represents the scale of this transform
+     */
+    const Vec3f& scale() const RC_NOEXCEPT { return _scale; }
 private:
-    void _updateBasis();
+    void _updateBasis() RC_NOEXCEPT;
 
 private:
-    Vec3f _tranlsation;
+    Vec3f _translation;
     Quaternion _rotation;
     Vec3f _scale;
 
+    Vec3f _position;
     Vec3f _forward;
     Vec3f _up;
     Vec3f _right;

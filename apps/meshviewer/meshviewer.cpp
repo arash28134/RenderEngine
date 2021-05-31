@@ -108,8 +108,8 @@ int main(int argc, char** args)
     const float radiansFovy = glm::radians(fovy * 0.5f);
     const float distToModel = (aabb.getYLength() * 0.5f) / sin(radiansFovy) * cos(radiansFovy);
     Vec3f camPos = aabb.center();
-    camPos.z = distToModel * 1.1f;
-    camera.setTranslation(camPos);
+    camPos.z = -distToModel * 1.1f;
+    camera.transform().setTranslation(camPos);
     camera.updateView();
 
     // Create a buffer to send the camera info to the GPU
@@ -124,7 +124,7 @@ int main(int argc, char** args)
         const Mat4 projView = camPtr->getProjectionMatrix() * camPtr->getViewMatrix();
         memcpy(ptr, &projView[0][0], 16 * sizeof(float));
 
-        const Vec3f camPos = camPtr->getPosition();
+        const Vec3f camPos = camPtr->transform().worldPosition();
         memcpy(ptr + 16 * sizeof(float), &camPos[0], 3 * sizeof(float));
     };
     cameraBuffer.writeData(updateCameraBufferCb);
@@ -175,7 +175,7 @@ int main(int argc, char** args)
             const double deltaX = x - lastRotMouseX;
             lastRotMouseX = x;
 
-            camera.rotateY(deltaX);
+            camera.transform().rotateY(deltaX);
             camera.updateView();
             cameraBuffer.writeData(updateCameraBufferCb);
         }
@@ -194,7 +194,7 @@ int main(int argc, char** args)
             lastPanMouseX = x;
             lastPanMouseY = y;
 
-            camera.translate({-deltaX * 0.01, deltaY * 0.01, 0.0});
+            camera.transform().translate({deltaX * 0.01, deltaY * 0.01, 0.0});
             camera.updateView();
             cameraBuffer.writeData(updateCameraBufferCb);
         }

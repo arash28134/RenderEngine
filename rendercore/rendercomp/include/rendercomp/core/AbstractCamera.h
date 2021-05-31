@@ -30,6 +30,8 @@ namespace rendercomp
  * Although this class stores and give access to the projection matrix, is the subclasses
  * responsible to implement the projection logic computation, as well as to compute
  * such matrix in the way they see fitter.
+ *
+ * The camera looks towards the positive Z axis
  */
 class AbstractCamera
 {
@@ -47,125 +49,6 @@ public:
 
     AbstractCamera(AbstractCamera&&) RC_NOEXCEPT = default;
     AbstractCamera& operator=(AbstractCamera&&) RC_NOEXCEPT = default;
-
-    /**
-     * @brief translate Moves the camera by the given translation vector. Because the
-     *        camera view matrix must be inverted, this function performs internally the
-     *        conversion to the opposite values, thus a normal displacement must be feed,
-     *        rathern than the negative. (Example, to move 5 units on the axis Y, the
-     *        parameter delta must be {0.f, 5.f, 0.f})
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param delta Vec3f containing the movement delta on each of the three world aligned axes
-     */
-    void translate(const Vec3f& delta) RC_NOEXCEPT;
-
-    /**
-     * @brief setTranslation Sets this camera position in the 3D space. Because the camera
-     *        view matrix must be the inverted transform of what it must be achieved, this
-     *        function performs internally the conversion to the opposite values, thus a normal
-     *        3D position must be feed, rather than the negative. (Example, to place the camera
-     *        in the position 10, 10, 10, the parameter translation must be {10.f, 10.f, 10.f})
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param translation Vec3f containing the new position of the camera
-     */
-    void setTranslation(const Vec3f& translation) RC_NOEXCEPT;
-
-    /**
-     * @brief moveForward Moves the camera 'd' units in the direction the camera is facing.
-     *        Internally, the camera uses the forward vector of its transform to perform
-     *        this operation. Negative values will move it backwards.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param d The amount of world space units to move the camera in the forward direction.
-     */
-    void moveForward(const float d) RC_NOEXCEPT;
-
-    /**
-     * @brief moveRight Moves the camera 'd' units to the right direction of the camera.
-     *        Internally, the camera uses the right (strafe) vector of its transform to perform
-     *        this operation. Negative values will move it to the left.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param d The amount of world space units to move the camera in the right direction.
-     */
-    void moveRight(const float d) RC_NOEXCEPT;
-
-    /**
-     * @brief moveUp Moves the camera 'd' units vertically.
-     *        Internally, the camera uses the up vector of its transform to perform
-     *        this operation. Negative values will move it down.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param d The amount of world space units to move the camera vertically.
-     */
-    void moveUp(const float d) RC_NOEXCEPT;
-
-    /**
-     * @brief rotateX Rotates the camera around its local X axis the given amount of degrees.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param degrees Amount of degrees to rotate.
-     */
-    void rotateX(const float degrees) RC_NOEXCEPT;
-
-    /**
-     * @brief rotateY Rotates the camera around its local Y axis the given amount of degrees.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param degrees Amount of degrees to rotate.
-     */
-    void rotateY(const float degrees) RC_NOEXCEPT;
-
-    /**
-     * @brief rotateZ Rotates the camera around its local Z axis the given amount of degrees.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param degrees Amount of degrees to rotate.
-     */
-    void rotateZ(const float degrees) RC_NOEXCEPT;
-
-    /**
-     * @brief rotate Performs the given rotation as a quaternion on top of the Camera's current
-     *        local axis reference.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param q A quaternion representing a rotation to chain to the current camera's rotation.
-     */
-    void rotate(const Quaternion& q) RC_NOEXCEPT;
-
-    /**
-     * @brief setRotation Sets the camera orientation from the given quaternion parameter.
-     *        Because the camera view matrix must be the opposite of the desired movement, this
-     *        function internally negates the value to perform the correct movement without having
-     *        to feed negative values to it.
-     *        THIS FUNCTION DOES NOT UPDATE THE VIEW MATRIX. AFTER UPDATING THE VALUE, A MANUAL
-     *        CALL TO updateView() MUST BE PERFORMED IF IT IS DESIRED TO UPDATE THE VIEW MATRIX.
-     * @param q A quaternion representing the new camera rotation.
-     */
-    void setRotation(const Quaternion& q) RC_NOEXCEPT;
 
     /**
      * @brief setNearPlane sets the distance to the near plane, in world units.
@@ -227,34 +110,6 @@ public:
     const Mat4& getViewMatrix() const RC_NOEXCEPT;
 
     /**
-     * @brief getPosition Returns the wolrd space position of the camera
-     * @return Vec3f containing the camera position
-     */
-    Vec3f getPosition() const RC_NOEXCEPT;
-
-
-    /**
-     * @brief Returns the vector pointing to the Z+ axis on the camera local reference
-     *        system, transformed to world space
-     * @return Vec3f with the normalized forward vector of the camera
-     */
-    const Vec3f& forward() const RC_NOEXCEPT;
-
-    /**
-     * @brief Returns the vector pointing to the X+ axis on the camera local reference
-     *        system, transformed to world space
-     * @return Vec3f with the normalized right vector of the camera
-     */
-    const Vec3f& right() const RC_NOEXCEPT;
-
-    /**
-     * @brief Returns the vector pointing to the Y+ axis on the camera local reference
-     *        system, transformed to world space
-     * @return Vec3f with the normalized up vector of the camera
-     */
-    const Vec3f& up() const RC_NOEXCEPT;
-
-    /**
      * @brief updateView Computes and stores the view matrix by composing it from this camera's
      *        rotation and translation.
      */
@@ -266,9 +121,20 @@ public:
      */
     virtual void updateProjection() RC_NOEXCEPT = 0;
 
+    /**
+     * @brief Returns a reference to the transform object to manipulate the camera
+     * @return Transform object
+     */
+    const Transform& transform() const RC_NOEXCEPT { return _transform; }
+
+    /**
+     * @brief Returns a reference to the transform object to manipulate the camera
+     * @return Transform object
+     */
+    Transform& transform() RC_NOEXCEPT { return _transform; }
+
 protected:
     Transform _transform;
-    Vec3f _position;
     Mat4 _view;
     Mat4 _projection;
     float _near, _far;

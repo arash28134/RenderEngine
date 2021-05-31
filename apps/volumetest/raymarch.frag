@@ -5,14 +5,6 @@ in vec3 rayDirection;
 
 out vec4 color;
 
-uniform Camera
-{
-    mat4 proj;
-    mat4 view;
-    vec4 camPos;
-    vec4 forward;
-} camera;
-
 uniform sampler3D inputTexture;
 uniform vec3 minB;
 uniform vec3 maxB;
@@ -32,6 +24,11 @@ float sampleDensity(const in vec3 pos)
 
 void main()
 {
+/*
+    const float norm = length((rayOrigin - vec3(1.0)) * 0.5);
+    color = vec4(mix(vec3(1, 0, 0), vec3(1, 1, 1), norm), 1);
+    return;
+*/
     const uint MAX_MARCH_STEPS = 128;
     const vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
     const float worldStepSize = length(maxB - minB) / float(MAX_MARCH_STEPS);

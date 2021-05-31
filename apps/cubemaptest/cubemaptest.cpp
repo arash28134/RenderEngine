@@ -88,7 +88,6 @@ int main(int, char** argv)
     struct CameraControlParams
     {
         bool leftDown {false};
-        bool rightDown {false};
         bool resetRot {false};
         double lastRotMouseX = -1.0;
         double lastRotMouseY = -1.0;
@@ -104,11 +103,6 @@ int main(int, char** argv)
         {
             ccpPtr->leftDown = action == MouseButtonAction::ACTION_PRESS;
             ccpPtr->resetRot = ccpPtr->leftDown;
-        }
-        else if(button == MouseButton::MOUSE_BUTTON_RIGHT)
-        {
-            ccpPtr->rightDown = action == MouseButtonAction::ACTION_PRESS;
-            ccpPtr->resetRot = ccpPtr->rightDown;
         }
     });
     window.setCursorPositionHandler([ccpPtr = &ccp,
@@ -129,20 +123,12 @@ int main(int, char** argv)
             const double deltaX = x - ccpPtr->lastRotMouseX;
             ccpPtr->lastRotMouseX = x;
             ccpPtr->rotY += deltaX;
-
-            camPtr->setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
-                                Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
-            camPtr->updateView();
-            camBufferPtr->writeData(*camUpdateCbPtr);
-        }
-        else if(ccpPtr->rightDown)
-        {
             const double deltaY = y - ccpPtr->lastRotMouseY;
             ccpPtr->lastRotMouseY = y;
             ccpPtr->rotX += deltaY;
 
-            camPtr->setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
-                                Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
+            camPtr->transform().setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
+                                            Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
             camPtr->updateView();
             camBufferPtr->writeData(*camUpdateCbPtr);
         }

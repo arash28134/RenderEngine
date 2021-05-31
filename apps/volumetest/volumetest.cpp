@@ -93,8 +93,9 @@ int main(int, char** argv)
                               100.f,
                               static_cast<float>(1536) / static_cast<float>(864),
                               45.f);
-    camera.translate({0.f, 0.f, 5.f});
+    camera.transform().translate({0.f, 0.f, -5.f});
     camera.updateView();
+
     // Camera buffer (projView matrix + cam position)
     UniformBuffer camBuffer (sizeof(float) * (16 + 3),
                              BufferDataPolicy::DYNAMIC,
@@ -108,11 +109,11 @@ int main(int, char** argv)
         memcpy(data + offset, &camPtr->getViewMatrix()[0][0], sizeof(float) * 16);
         offset += sizeof(float) * 16;
 
-        const auto camPos = camPtr->getPosition();
+        const auto camPos = camPtr->transform().worldPosition();
         memcpy(data + offset, &camPos[0], sizeof(float) * 3);
         offset += sizeof(float) * 4;
 
-        memcpy(data + offset, &camPtr->forward()[0], sizeof(float) * 3);
+        memcpy(data + offset, &camPtr->transform().forward()[0], sizeof(float) * 3);
     };
 
     // Initialize camera buffer
@@ -163,8 +164,8 @@ int main(int, char** argv)
             ccpPtr->lastRotMouseY = y;
             ccpPtr->rotX += deltaY;
 
-            camPtr->setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
-                                Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
+            camPtr->transform().setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
+                                            Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
             camPtr->updateView();
             camBufferPtr->writeData(*camUpdateCbPtr);
         }
@@ -177,7 +178,7 @@ int main(int, char** argv)
 
     const data::Volume noise = CreateVolume();
     const Texture3D volume (&noise, 6);
-    volume.setMinFilter(TextureMinFilter::LINEAR_MIPMAP_LINEAR);
+    volume.setMinFilter(TextureMinFilter::LINEAR);
     volume.setMagFilter(TextureMagFilter::LINEAR);
     volume.setWrapR(TextureWrapMode::CLAMP_TO_EDGE);
     volume.setWrapS(TextureWrapMode::CLAMP_TO_EDGE);

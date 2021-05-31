@@ -19,43 +19,45 @@
 
 namespace rendercomp
 {
-Transform::Transform()
- : _tranlsation(0.f, 0.f, 0.f)
+Transform::Transform() RC_NOEXCEPT
+ : _translation(0.f, 0.f, 0.f)
  , _rotation(Quaternion())
  , _scale(1.f, 1.f, 1.f)
 {
     _updateBasis();
 }
 
-void Transform::translate(const Vec3f& delta)
+void Transform::translate(const Vec3f& delta) RC_NOEXCEPT
 {
-    _tranlsation += delta;
+    _translation += delta;
+    _updateBasis();
 }
 
-void Transform::setTranslation(const Vec3f& translation)
+void Transform::setTranslation(const Vec3f& translation) RC_NOEXCEPT
 {
-    _tranlsation = translation;
+    _translation = translation;
+    _updateBasis();
 }
 
-void Transform::rotateX(const float degree)
+void Transform::rotateX(const float degree) RC_NOEXCEPT
 {
     _rotation *= Quaternion(Vec3f(glm::radians(degree), 0.f, 0.f));
     _updateBasis();
 }
 
-void Transform::rotateY(const float degree)
+void Transform::rotateY(const float degree) RC_NOEXCEPT
 {
     _rotation *= Quaternion(Vec3f(0.f, glm::radians(degree), 0.f));
     _updateBasis();
 }
 
-void Transform::rotateZ(const float degree)
+void Transform::rotateZ(const float degree) RC_NOEXCEPT
 {
     _rotation *= Quaternion(Vec3f(0.f, 0.f, glm::radians(degree)));
     _updateBasis();
 }
 
-void Transform::rotate(const Vec3f& angleAxis)
+void Transform::rotate(const Vec3f& angleAxis) RC_NOEXCEPT
 {
     _rotation *= glm::toQuat(glm::eulerAngleXYX(glm::radians(angleAxis.x),
                                                 glm::radians(angleAxis.y),
@@ -63,13 +65,13 @@ void Transform::rotate(const Vec3f& angleAxis)
     _updateBasis();
 }
 
-void Transform::rotate(const Quaternion& quat)
+void Transform::rotate(const Quaternion& quat) RC_NOEXCEPT
 {
     _rotation *= quat;
     _updateBasis();
 }
 
-void Transform::setRotation(const Vec3f& angleAxis)
+void Transform::setRotation(const Vec3f& angleAxis) RC_NOEXCEPT
 {
     _rotation = glm::toQuat(glm::eulerAngleXYX(glm::radians(angleAxis.x),
                                                glm::radians(angleAxis.y),
@@ -77,49 +79,40 @@ void Transform::setRotation(const Vec3f& angleAxis)
     _updateBasis();
 }
 
-void Transform::setRotation(const Quaternion& quat)
+void Transform::setRotation(const Quaternion& quat) RC_NOEXCEPT
 {
     _rotation = quat;
     _updateBasis();
 }
 
-void Transform::scale(const Vec3f& delta)
+void Transform::scale(const Vec3f& delta) RC_NOEXCEPT
 {
     _scale *= delta;
     _scale = glm::max(_scale, Vec3f(0.01f, 0.01f, 0.01f));
 }
 
-void Transform::setScale(const Vec3f& scale)
+void Transform::setScale(const Vec3f& scale) RC_NOEXCEPT
 {
     _scale = glm::max(scale, Vec3f(0.01f, 0.01f, 0.01f));
 }
 
-Mat4 Transform::toMatrix() const
+Mat4 Transform::toMatrix() const RC_NOEXCEPT
 {
-    return glm::scale(_scale) * glm::translate(_tranlsation) * glm::toMat4(_rotation);
+    return glm::scale(_scale) * glm::translate(_translation) * glm::toMat4(_rotation);
 }
 
-const Vec3f& Transform::forward() const
-{
-    return _forward;
-}
-
-const Vec3f& Transform::up() const
-{
-    return _up;
-}
-
-const Vec3f& Transform::right() const
-{
-    return _right;
-}
-
-void Transform::_updateBasis()
+void Transform::_updateBasis() RC_NOEXCEPT
 {
     const Mat3 rotMatrix = glm::toMat3(_rotation);
+    /*
+    _right = Vec3f(rotMatrix[0][0], rotMatrix[1][0], rotMatrix[2][0]);
+    _up = Vec3f(rotMatrix[0][1], rotMatrix[1][1], rotMatrix[2][1]);
+    _forward = Vec3f(rotMatrix[0][2], rotMatrix[1][2], rotMatrix[2][2]);
+    */
     _right = rotMatrix[0];
     _up = rotMatrix[1];
     _forward = rotMatrix[2];
+    _position = rotMatrix * _translation;
 }
 
 }

@@ -21,4 +21,5 @@
 #define RC_NOEXCEPT noexcept
 #else
 #define RC_NOEXCEPT
+#include <iostream>
 #endif

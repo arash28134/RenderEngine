@@ -56,7 +56,7 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {
-    const vec3 L = normalize(vec3(1.0, 1.0, 1.0));
+    const vec3 L = normalize(vec3(1.0, 1.0, -1.0));
     vec3 H = normalize(V + L);
 
     const vec3 radiance = vec3(5.0);
