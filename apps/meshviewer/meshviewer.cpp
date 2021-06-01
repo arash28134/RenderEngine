@@ -194,7 +194,7 @@ int main(int argc, char** args)
             lastPanMouseX = x;
             lastPanMouseY = y;
 
-            camera.transform().translate({deltaX * 0.01, deltaY * 0.01, 0.0});
+            camera.transform().translate({deltaX * 0.01f, deltaY * 0.01f, 0.0f});
             camera.updateView();
             cameraBuffer.writeData(updateCameraBufferCb);
         }

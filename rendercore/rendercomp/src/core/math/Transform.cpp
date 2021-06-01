@@ -20,8 +20,8 @@
 namespace rendercomp
 {
 Transform::Transform() RC_NOEXCEPT
- : _translation(0.f, 0.f, 0.f)
- , _rotation(Quaternion())
+ : _rotation(Quaternion())
+ , _translation(0.f, 0.f, 0.f)
  , _scale(1.f, 1.f, 1.f)
 {
     _updateBasis();

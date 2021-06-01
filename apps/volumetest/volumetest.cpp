@@ -165,7 +165,7 @@ int main(int, char** argv)
             ccpPtr->rotX += deltaY;
 
             camPtr->transform().setRotation(Quaternion({glm::radians(ccpPtr->rotX), 0.f, 0.f}) *
-                                            Quaternion({0.f, glm::radians(ccpPtr->rotY), 0.f}));
+                                            Quaternion({0.f, -glm::radians(ccpPtr->rotY), 0.f}));
             camPtr->updateView();
             camBufferPtr->writeData(*camUpdateCbPtr);
         }

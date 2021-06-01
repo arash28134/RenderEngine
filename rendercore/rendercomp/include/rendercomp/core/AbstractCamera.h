@@ -24,6 +24,8 @@
 namespace rendercomp
 {
 
+class Transform;
+
 /**
  * @brief The AbstractCamera class is the base class for any camera implementation.
  * It implements the common logic to compute and store the view matrix.

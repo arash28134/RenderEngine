@@ -90,8 +90,8 @@ private:
     void _updateBasis() RC_NOEXCEPT;
 
 private:
-    Vec3f _translation;
     Quaternion _rotation;
+    Vec3f _translation;
     Vec3f _scale;
 
     Vec3f _position;

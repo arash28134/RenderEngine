@@ -270,11 +270,10 @@ public:
      *          - rendeng::KeyAction being the action applied on the key
      *          - rendeng::InputMod being the modifier applied to the action and key
      */
-    void setKeyboardInputHandler(const std::function<void(const Key,
-                                                          const KeyAction,
-                                                          const InputMod)>& cb)
+    template<typename T>
+    void setKeyboardInputHandler(T&& cb)
     {
-        _keyboardCb = cb;
+        _keyboardCb = std::forward<T>(cb);
     }
 
     /**
@@ -289,10 +288,10 @@ public:
      *        The arguments being double allow, in those platforms that support it, to have
      *        subpixel position information.
      */
-    void setCursorPositionHandler(const std::function<void(const double xPos,
-                                                           const double yPos)>& cb)
+    template<typename T>
+    void setCursorPositionHandler(T&& cb)
     {
-        _cursorPosCb = cb;
+        _cursorPosCb = std::forward<T>(cb);
     }
 
     /**
@@ -304,9 +303,10 @@ public:
      *          - bool entered a flag that is true when the mouse enters the window, false
      *            otherwise.
      */
-    void setCursorEnterWindowHandler(const std::function<void(const bool)>& cb)
+    template<typename T>
+    void setCursorEnterWindowHandler(T&& cb)
     {
-        _cursorEnterCb = cb;
+        _cursorEnterCb = std::forward<T>(cb);
     }
 
     /**
@@ -321,11 +321,10 @@ public:
      *          - rendeng::MouseButtonAction being the action applied on the button
      *          - rendeng::InputMod being the modifier applied to the action and button
      */
-    void setMouseInputHandler(const std::function<void(const MouseButton,
-                                                       const MouseButtonAction,
-                                                       const InputMod)>& cb)
+    template<typename T>
+    void setMouseInputHandler(T&& cb)
     {
-        _mouseInputCb = cb;
+        _mouseInputCb = std::forward<T>(cb);
     }
 
     /**
@@ -336,9 +335,10 @@ public:
      *        With:<br>
      *          - double yOffset movement produced by the scroll event
      */
-    void setScrollInputHandler(const std::function<void(const double yOffset)>& cb)
+    template<typename T>
+    void setScrollInputHandler(T&& cb)
     {
-        _scrollCb = cb;
+        _scrollCb = std::forward<T>(cb);
     }
 
     /**
@@ -350,10 +350,10 @@ public:
      *          - uint32_t width being the new width in pixels of the framebuffer
      *          - uint32_t height being the new height in pixels of the framebuffer
      */
-    void setFrameResizeHandler(const std::function<void(const uint32_t width,
-                                                        const uint32_t height)>& cb)
+    template<typename T>
+    void setFrameResizeHandler(T&& cb)
     {
-        _fbResizeCb = cb;
+        _fbResizeCb = std::forward<T>(cb);
     }
 
     /**
@@ -362,9 +362,10 @@ public:
      * @param drawFunc Callback function, with the signature<br>
      *        void ()
      */
-    void setDrawCallback(const std::function<void()>& drawFunc)
+    template<typename T>
+    void setDrawCallback(T&& drawFunc)
     {
-        _drawCb = drawFunc;
+        _drawCb = std::forward<T>(drawFunc);
     }
 
     void renderLoop() RC_NOEXCEPT;
